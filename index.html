@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Hypothetically Speaking...</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #130828;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* ── Animated background ── */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.25;
+            pointer-events: none;
+            animation: blobFloat 9s ease-in-out infinite;
+        }
+        .blob-1 { width: 420px; height: 420px; background: #7C3AED; top: -130px; left: -100px; animation-delay: 0s; }
+        .blob-2 { width: 320px; height: 320px; background: #EC4899; bottom: -80px; right: -60px; animation-delay: 3s; }
+        .blob-3 { width: 260px; height: 260px; background: #F59E0B; top: 45%; left: 45%; transform: translate(-50%,-50%); animation-delay: 1.5s; }
+
+        @keyframes blobFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-18px) scale(1.06); }
+        }
+        .blob-3 { animation: blobFloat3 9s ease-in-out infinite; animation-delay: 1.5s; }
+        @keyframes blobFloat3 {
+            0%, 100% { transform: translate(-50%,-50%) scale(1); }
+            50% { transform: translate(-50%, calc(-50% - 18px)) scale(1.06); }
+        }
+
+        /* ── Screen wrapper ── */
+        .screen {
+            display: none;
+            position: fixed;
+            inset: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 1;
+        }
+        .screen.active { display: block; }
+
+        .screen-inner {
+            min-height: 100%;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 28px 20px 36px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* ── Back button ── */
+        .back-btn {
+            width: 44px; height: 44px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.1);
+            border: none; cursor: pointer;
+            color: white; font-size: 20px;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s;
+            flex-shrink: 0;
+        }
+        .back-btn:active { background: rgba(255,255,255,0.18); }
+
+        /* ════════════════════════════════
+           HOME SCREEN
+        ════════════════════════════════ */
+        #homeScreen .screen-inner { justify-content: center; }
+
+        .home-logo {
+            font-size: 48px;
+            font-weight: 900;
+            color: white;
+            text-align: center;
+            line-height: 1.1;
+            margin-bottom: 10px;
+        }
+        .home-logo .gradient-text {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD93D);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .home-tagline {
+            color: rgba(255,255,255,0.5);
+            font-size: 15px;
+            font-weight: 700;
+            text-align: center;
+            font-style: italic;
+            margin-bottom: 56px;
+        }
+
+        .mode-cards { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+
+        .mode-card {
+            border-radius: 26px;
+            padding: 26px 24px;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .mode-card:active { transform: scale(0.97); }
+        .mode-card-general { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .mode-card-party   { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .mode-card::after {
+            content: '→';
+            position: absolute; right: 24px; top: 50%;
+            transform: translateY(-50%);
+            font-size: 22px; color: rgba(255,255,255,0.55);
+        }
+        .mode-card-emoji  { font-size: 38px; display: block; margin-bottom: 6px; }
+        .mode-card-title  { font-size: 22px; font-weight: 900; color: white; margin-bottom: 3px; }
+        .mode-card-desc   { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.75); }
+
+        /* ════════════════════════════════
+           SETUP SCREEN
+        ════════════════════════════════ */
+        #setupScreen .screen-inner { justify-content: flex-start; gap: 0; }
+
+        .setup-top {
+            display: flex; align-items: center; gap: 14px;
+            width: 100%; margin-bottom: 32px;
+        }
+        .setup-heading { flex: 1; }
+        .setup-title    { font-size: 26px; font-weight: 900; color: white; }
+        .setup-subtitle { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.45); margin-top: 2px; }
+
+        .section-label {
+            font-size: 11px; font-weight: 800; letter-spacing: 2px;
+            text-transform: uppercase; color: rgba(255,255,255,0.4);
+            align-self: flex-start; margin-bottom: 12px; width: 100%;
+        }
+
+        /* Category pills */
+        .category-pills { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; margin-bottom: 36px; }
+
+        .cat-pill {
+            padding: 10px 16px; border-radius: 50px;
+            background: rgba(255,255,255,0.09);
+            border: 2px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.6);
+            font-family: 'Nunito', sans-serif;
+            font-size: 13px; font-weight: 800;
+            cursor: pointer; transition: all 0.18s;
+        }
+        .cat-pill.active { border-color: transparent; color: white; }
+        .cat-pill[data-cat="general"].active      { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .cat-pill[data-cat="spicy"].active        { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .cat-pill[data-cat="deep"].active         { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .cat-pill[data-cat="ethical"].active      { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .cat-pill[data-cat="controversial"].active{ background: linear-gradient(135deg, #FF416C, #FF4B2B); }
+        .cat-pill[data-cat="chaos"].active        { background: linear-gradient(135deg, #f953c6, #b91d73); }
+        .cat-pill[data-cat="random"].active       { background: linear-gradient(135deg, #fa709a, #fee140); }
+
+        /* Player inputs */
+        .players-section { width: 100%; margin-bottom: 28px; }
+
+        .player-inputs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+
+        .player-row { display: flex; gap: 10px; align-items: center; }
+
+        .player-input {
+            flex: 1;
+            background: rgba(255,255,255,0.09);
+            border: 2px solid rgba(255,255,255,0.13);
+            border-radius: 14px;
+            padding: 14px 16px;
+            color: white;
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px; font-weight: 700;
+            outline: none; transition: border-color 0.15s;
+        }
+        .player-input::placeholder { color: rgba(255,255,255,0.28); }
+        .player-input:focus { border-color: rgba(255,255,255,0.38); }
+
+        .remove-btn {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: rgba(255,90,90,0.18);
+            border: none; cursor: pointer; color: #FF6B6B;
+            font-size: 16px; font-weight: 900;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: background 0.15s;
+        }
+        .remove-btn:active { background: rgba(255,90,90,0.3); }
+
+        .add-player-btn {
+            width: 100%; padding: 13px;
+            background: rgba(255,255,255,0.06);
+            border: 2px dashed rgba(255,255,255,0.18);
+            border-radius: 14px;
+            color: rgba(255,255,255,0.45);
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px; font-weight: 800;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .add-player-btn:active { background: rgba(255,255,255,0.1); }
+
+        .error-msg {
+            color: #FF6B6B; font-size: 13px; font-weight: 800;
+            text-align: center; margin-bottom: 14px;
+            opacity: 0; transition: opacity 0.2s;
+        }
+        .error-msg.show { opacity: 1; }
+
+        .start-btn {
+            width: 100%; padding: 18px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            border: none; color: white;
+            font-family: 'Nunito', sans-serif;
+            font-size: 18px; font-weight: 900;
+            cursor: pointer; letter-spacing: 0.3px;
+            transition: transform 0.15s, opacity 0.15s;
+            margin-top: auto;
+        }
+        .start-btn:active { transform: scale(0.97); }
+
+        /* ════════════════════════════════
+           GAME SCREEN
+        ════════════════════════════════ */
+        #gameScreen .screen-inner { justify-content: space-between; min-height: 100dvh; }
+
+        .game-header {
+            display: flex; align-items: center; gap: 14px;
+            width: 100%; margin-bottom: 24px;
+        }
+        .progress-track {
+            flex: 1; height: 6px; border-radius: 3px;
+            background: rgba(255,255,255,0.14);
+        }
+        .progress-fill {
+            height: 100%; border-radius: 3px;
+            background: linear-gradient(90deg, #FF6B6B, #FF8E53);
+            transition: width 0.35s ease;
+        }
+        .q-counter { font-size: 13px; font-weight: 800; color: rgba(255,255,255,0.45); }
+
+        /* Question card */
+        .q-card {
+            width: 100%;
+            border-radius: 32px;
+            padding: 36px 30px 28px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 320px;
+            transition: opacity 0.22s ease, transform 0.22s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .q-card.out { opacity: 0; transform: scale(0.94) translateY(12px); }
+        .q-card.in  { opacity: 0; transform: scale(1.03) translateY(-8px); }
+
+        .q-card-shine {
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .cat-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(255,255,255,0.22);
+            border-radius: 50px; padding: 5px 13px;
+            font-size: 11px; font-weight: 800;
+            color: white; text-transform: uppercase; letter-spacing: 1.2px;
+            align-self: flex-start; margin-bottom: 22px;
+        }
+
+        .q-text {
+            font-size: 21px; font-weight: 800;
+            color: white; line-height: 1.45;
+            flex: 1;
+        }
+        .q-text .player-name {
+            background: rgba(255,255,255,0.28);
+            border-radius: 6px;
+            padding: 1px 6px;
+        }
+        .q-text .other-name {
+            background: rgba(0,0,0,0.18);
+            border-radius: 6px;
+            padding: 1px 6px;
+        }
+
+        .q-deco {
+            font-size: 58px; text-align: right;
+            opacity: 0.25; margin-top: 18px; line-height: 1; align-self: flex-end;
+        }
+        .q-drink-rule {
+            margin-top: 16px;
+            padding: 9px 14px;
+            background: rgba(255,255,255,0.18);
+            border-radius: 12px;
+            font-size: 14px; font-weight: 900;
+            color: white;
+            display: inline-block;
+        }
+        .q-drink-rule strong { font-size: 17px; }
+
+        /* Game actions */
+        .game-actions {
+            display: flex; gap: 12px;
+            width: 100%; margin-top: 24px;
+        }
+        .skip-btn {
+            flex: 1; padding: 16px; border-radius: 18px;
+            background: rgba(255,255,255,0.09);
+            border: 2px solid rgba(255,255,255,0.14);
+            color: rgba(255,255,255,0.65);
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px; font-weight: 800;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .skip-btn:active { background: rgba(255,255,255,0.14); }
+        .next-btn {
+            flex: 2.2; padding: 16px; border-radius: 18px;
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            border: none; color: white;
+            font-family: 'Nunito', sans-serif;
+            font-size: 16px; font-weight: 900;
+            cursor: pointer; transition: transform 0.15s;
+        }
+        .next-btn:active { transform: scale(0.97); }
+
+        /* ════════════════════════════════
+           END SCREEN
+        ════════════════════════════════ */
+        #endScreen .screen-inner { justify-content: center; }
+
+        .end-emoji   { font-size: 78px; text-align: center; margin-bottom: 18px; }
+        .end-title   { font-size: 34px; font-weight: 900; color: white; text-align: center; margin-bottom: 10px; }
+        .end-sub     { font-size: 15px; color: rgba(255,255,255,0.45); font-weight: 700; text-align: center; margin-bottom: 52px; line-height: 1.5; }
+
+        .end-actions { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+
+        .play-again-btn {
+            width: 100%; padding: 18px; border-radius: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none; color: white;
+            font-family: 'Nunito', sans-serif;
+            font-size: 17px; font-weight: 900;
+            cursor: pointer; transition: transform 0.15s;
+        }
+        .play-again-btn:active { transform: scale(0.97); }
+        .home-btn {
+            width: 100%; padding: 17px; border-radius: 20px;
+            background: rgba(255,255,255,0.09);
+            border: 2px solid rgba(255,255,255,0.14);
+            color: rgba(255,255,255,0.75);
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px; font-weight: 800;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .home-btn:active { background: rgba(255,255,255,0.14); }
+
+        /* ── Confetti ── */
+        #confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 10; }
+
+        /* ── Mute button ── */
+        #muteBtn {
+            position: fixed; bottom: 18px; right: 18px; z-index: 999;
+            width: 44px; height: 44px; border-radius: 50%;
+            border: none; cursor: pointer;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            font-size: 20px; line-height: 44px; text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+            transition: background 0.2s, transform 0.15s;
+            padding: 0;
+        }
+        #muteBtn:hover { background: rgba(255,255,255,0.28); transform: scale(1.1); }
+        #muteBtn.muted { opacity: 0.55; }
+        .cp {
+            position: absolute; top: -14px;
+            animation: cpFall linear forwards;
+        }
+        @keyframes cpFall {
+            to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* ════════════════════════════════
+           PARTY EXTRAS — toggles
+        ════════════════════════════════ */
+        #partyExtrasSection { width: 100%; }
+
+        .toggle-group-label {
+            font-size: 11px; font-weight: 800; letter-spacing: 2px;
+            text-transform: uppercase; color: rgba(255,255,255,0.4);
+            margin: 20px 0 10px; display: block;
+        }
+
+        .toggle-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.06);
+            border: 1.5px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            margin-bottom: 9px;
+        }
+        .toggle-info { display: flex; flex-direction: column; gap: 2px; flex: 1; margin-right: 16px; }
+        .toggle-label    { font-size: 15px; font-weight: 800; color: white; }
+        .toggle-sublabel { font-size: 12px; color: rgba(255,255,255,0.38); font-weight: 600; }
+
+        .toggle-switch { position: relative; width: 50px; height: 28px; flex-shrink: 0; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .toggle-slider {
+            position: absolute; inset: 0;
+            background: rgba(255,255,255,0.14);
+            border-radius: 28px; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 22px; height: 22px;
+            left: 3px; top: 3px;
+            background: white; border-radius: 50%;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .toggle-switch input:checked + .toggle-slider { background: linear-gradient(135deg, #FF6B6B, #FF8E53); }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
+
+        .pill-rec {
+            display: inline-block;
+            background: linear-gradient(135deg, #FFD700, #FF8E53);
+            color: #2a0800;
+            font-size: 9px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 0.8px;
+            border-radius: 5px; padding: 2px 6px;
+            margin-left: 5px; vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        /* ════════════════════════════════
+           PUNISHMENT BANNER
+        ════════════════════════════════ */
+        .punish-banner {
+            width: 100%;
+            padding: 13px 18px;
+            border-radius: 16px;
+            background: rgba(255,107,107,0.14);
+            border: 1.5px solid rgba(255,107,107,0.3);
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 12px;
+        }
+        .punish-icon  { font-size: 26px; flex-shrink: 0; }
+        .punish-body  { flex: 1; }
+        .punish-label { font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+        .punish-text  { font-size: 14px; font-weight: 900; color: white; margin-top: 1px; line-height: 1.3; }
+
+        /* ════════════════════════════════
+           NOMINATE BUTTON
+        ════════════════════════════════ */
+        .nominate-btn {
+            width: 100%; padding: 12px 16px;
+            border-radius: 14px;
+            background: rgba(255,215,0,0.12);
+            border: 1.5px solid rgba(255,215,0,0.28);
+            color: #FFD700;
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px; font-weight: 800;
+            cursor: pointer; margin-bottom: 12px;
+            transition: background 0.15s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .nominate-btn:active { background: rgba(255,215,0,0.2); }
+
+        /* ════════════════════════════════
+           NOMINATION SHEET
+        ════════════════════════════════ */
+        .nom-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 19;
+            opacity: 0; transition: opacity 0.25s;
+            pointer-events: none;
+        }
+        .nom-backdrop.show { opacity: 1; pointer-events: all; }
+
+        .nom-sheet {
+            position: fixed;
+            bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+            width: 100%; max-width: 480px;
+            background: #1e0f38;
+            border-radius: 28px 28px 0 0;
+            padding: 24px 20px 40px;
+            z-index: 20;
+            box-shadow: 0 -20px 60px rgba(0,0,0,0.5);
+            transition: transform 0.3s cubic-bezier(0.34,1.3,0.64,1);
+        }
+        .nom-sheet.show { transform: translateX(-50%) translateY(0); }
+
+        .nom-sheet-title { font-size: 17px; font-weight: 900; color: white; text-align: center; margin-bottom: 18px; }
+        .nom-players { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 16px; }
+        .nom-player-btn {
+            padding: 12px 22px; border-radius: 50px;
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            border: none; color: white;
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px; font-weight: 900;
+            cursor: pointer; transition: transform 0.12s;
+        }
+        .nom-player-btn:active { transform: scale(0.93); }
+        .nom-skip-btn {
+            width: 100%; padding: 13px; border-radius: 14px;
+            background: rgba(255,255,255,0.07); border: none;
+            color: rgba(255,255,255,0.38);
+            font-family: 'Nunito', sans-serif;
+            font-size: 13px; font-weight: 800;
+            cursor: pointer;
+        }
+
+        /* ════════════════════════════════
+           DRINK SCREEN
+        ════════════════════════════════ */
+        .drink-screen {
+            position: fixed; inset: 0; z-index: 30;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 40px 28px; text-align: center;
+            opacity: 0; transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .drink-screen.show { opacity: 1; pointer-events: all; }
+        .drink-screen-bg {
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, #1a0040, #0d0521);
+            z-index: -1;
+        }
+        .drink-screen-bg::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at center, rgba(255,107,107,0.25) 0%, transparent 70%);
+        }
+        .ds-emoji { font-size: 88px; margin-bottom: 20px; animation: dsWiggle 0.5s ease infinite alternate; }
+        @keyframes dsWiggle {
+            from { transform: scale(1) rotate(-6deg); }
+            to   { transform: scale(1.12) rotate(6deg); }
+        }
+        .ds-title { font-size: 34px; font-weight: 900; color: white; margin-bottom: 12px; letter-spacing: -0.5px; }
+        .ds-desc  { font-size: 20px; font-weight: 800; color: rgba(255,255,255,0.85); line-height: 1.45; margin-bottom: 48px; max-width: 340px; }
+        .ds-player { background: linear-gradient(135deg, #FF6B6B, #FFD93D); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .ds-continue {
+            padding: 18px 52px; border-radius: 22px;
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            border: none; color: white;
+            font-family: 'Nunito', sans-serif;
+            font-size: 18px; font-weight: 900;
+            cursor: pointer; transition: transform 0.15s;
+        }
+        .ds-continue:active { transform: scale(0.96); }
+
+        /* ════════════════════════════════
+           DRINK TOAST
+        ════════════════════════════════ */
+        .drink-toast {
+            position: fixed;
+            top: 28px; left: 50%; transform: translateX(-50%) translateY(-20px);
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            border-radius: 50px; padding: 13px 28px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 16px; font-weight: 900; color: white;
+            z-index: 50; white-space: nowrap;
+            opacity: 0; transition: opacity 0.25s, transform 0.25s;
+            pointer-events: none;
+        }
+        .drink-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ════════════════════════════════
+           INTRO ANIMATIONS (first load only)
+        ════════════════════════════════ */
+        /* ════════════════════════════════
+           TRANSITION SCREEN
+        ════════════════════════════════ */
+        #transitionScreen {
+            position: fixed; inset: 0; z-index: 500;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 28px;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        #transitionScreen.ts-visible { opacity: 1; pointer-events: all; }
+
+        /* per-category gradients */
+        #transitionScreen.ts-general      { background: linear-gradient(135deg,#1a2980,#26d0ce); }
+        #transitionScreen.ts-spicy        { background: linear-gradient(135deg,#7b1e1e,#c0392b,#e67e22); }
+        #transitionScreen.ts-chaos        { background: linear-gradient(135deg,#0f0c29,#302b63,#24243e); }
+        #transitionScreen.ts-controversial{ background: linear-gradient(135deg,#1c1c1c,#3d0000,#6b2737); }
+        #transitionScreen.ts-ethical      { background: linear-gradient(135deg,#005c97,#363795); }
+        #transitionScreen.ts-deep         { background: linear-gradient(135deg,#0f2027,#203a43,#2c5364); }
+        #transitionScreen.ts-random       { background: linear-gradient(135deg,#f093fb,#8b5cf6,#3b82f6,#06b6d4); }
+
+        #tsCatLabel {
+            font-size: clamp(3.8rem, 13vw, 9rem);
+            font-weight: 900; color: #fff;
+            text-shadow: 0 4px 24px rgba(0,0,0,0.45);
+            opacity: 0;
+            letter-spacing: 0.01em;
+            text-align: center; padding: 0 24px;
+        }
+        #tsStart {
+            font-size: clamp(2.8rem, 9vw, 5.5rem);
+            font-weight: 900; opacity: 0;
+            background: linear-gradient(90deg,#ff6b35,#f7931e,#ffe000,#ff6b35);
+            background-size: 200% auto;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: tsStartShine 1s linear infinite paused;
+            text-shadow: none;
+            filter: drop-shadow(0 2px 12px rgba(255,160,0,0.6));
+        }
+        #tsStart.ts-start-show {
+            animation-play-state: running;
+        }
+        @keyframes tsStartShine {
+            to { background-position: 200% center; }
+        }
+
+        /* category label entrance animations */
+        @keyframes tsFromLeft   { from{opacity:0;transform:translateX(-80px)} to{opacity:1;transform:none} }
+        @keyframes tsFromRight  { from{opacity:0;transform:translateX(80px)}  to{opacity:1;transform:none} }
+        @keyframes tsFromTop    { from{opacity:0;transform:translateY(-70px)} to{opacity:1;transform:none} }
+        @keyframes tsFromBottom { from{opacity:0;transform:translateY(70px)}  to{opacity:1;transform:none} }
+        @keyframes tsFadeScale  { from{opacity:0;transform:scale(0.6)}        to{opacity:1;transform:scale(1)} }
+        @keyframes tsSpinIn     { from{opacity:0;transform:rotate(-180deg) scale(0.5)} to{opacity:1;transform:rotate(0) scale(1)} }
+        @keyframes tsGlitch {
+            0%  {opacity:0;transform:translateX(-6px) skewX(-4deg)}
+            15% {opacity:1;transform:translateX(5px)  skewX(3deg)}
+            30% {transform:translateX(-3px) skewX(-2deg)}
+            45% {transform:translateX(2px)}
+            60% {transform:translateX(-1px)}
+            100%{opacity:1;transform:none}
+        }
+
+        #tsCatLabel.anim-from-left   { animation: tsFromLeft   0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
+        #tsCatLabel.anim-from-right  { animation: tsFromRight  0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
+        #tsCatLabel.anim-from-top    { animation: tsFromTop    0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
+        #tsCatLabel.anim-from-bottom { animation: tsFromBottom 0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
+        #tsCatLabel.anim-fade-scale  { animation: tsFadeScale  0.45s cubic-bezier(0.34,1.4,0.64,1) forwards; }
+        #tsCatLabel.anim-spin-in     { animation: tsSpinIn     0.5s  cubic-bezier(0.34,1.2,0.64,1) forwards; }
+        #tsCatLabel.anim-glitch      { animation: tsGlitch     0.5s  steps(1,end) forwards; }
+
+        /* START! pop-in */
+        @keyframes tsStartPop {
+            0%  {opacity:0;transform:scale(0.4)}
+            65% {opacity:1;transform:scale(1.18)}
+            82% {transform:scale(0.94)}
+            100%{opacity:1;transform:scale(1)}
+        }
+        #tsStart.ts-start-show { animation: tsStartPop 0.4s cubic-bezier(0.34,1.3,0.64,1) forwards,
+                                             tsStartShine 1s linear infinite; }
+
+        /* whole screen fade-out */
+        @keyframes tsFadeOut { to { opacity: 0; } }
+        #transitionScreen.ts-out { animation: tsFadeOut 0.3s ease forwards; }
+
+        @keyframes revealLR {
+            from { opacity: 0; clip-path: inset(0 100% 0 0); }
+            to   { opacity: 1; clip-path: inset(0 0% 0 0); }
+        }
+        @keyframes jumpLand {
+            0%   { opacity: 0; transform: translateY(110px); }
+            60%  { opacity: 1; transform: translateY(-14px); }
+            78%  { transform: translateY(6px); }
+            90%  { transform: translateY(-3px); }
+            100% { transform: translateY(0); }
+        }
+
+        #homeScreen.intro .home-logo {
+            animation: revealLR 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both;
+        }
+        #homeScreen.intro .home-tagline {
+            animation: revealLR 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.55s both;
+        }
+        #homeScreen.intro .mode-cards .mode-card:nth-child(1) {
+            animation: jumpLand 0.65s cubic-bezier(0.34, 1.3, 0.64, 1) 0.88s both;
+        }
+        #homeScreen.intro .mode-cards .mode-card:nth-child(2) {
+            animation: jumpLand 0.65s cubic-bezier(0.34, 1.3, 0.64, 1) 1.02s both;
+        }
+    </style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<button id="muteBtn" onclick="toggleMute()" title="Toggle music">🔊</button>
+<div id="confetti"></div>
+
+<!-- ════ HOME ════ -->
+<div class="screen active" id="homeScreen">
+    <div class="screen-inner">
+        <div class="home-logo">
+            Hypo<span class="gradient-text">thetically</span><br>Speaking...
+        </div>
+        <p class="home-tagline">Where honesty gets uncomfortable 😬</p>
+
+        <div class="mode-cards">
+            <button class="mode-card mode-card-party" onclick="selectMode('party')">
+                <span class="mode-card-emoji">🎉</span>
+                <div class="mode-card-title">Party Mode</div>
+                <div class="mode-card-desc">Directed questions about the people you're with</div>
+            </button>
+            <button class="mode-card mode-card-general" onclick="selectMode('general')">
+                <span class="mode-card-emoji">💬</span>
+                <div class="mode-card-title">Discussion Mode</div>
+                <div class="mode-card-desc">Open questions for the whole group to discuss</div>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ════ SETUP ════ -->
+<div class="screen" id="setupScreen">
+    <div class="screen-inner">
+        <div class="setup-top">
+            <button class="back-btn" onclick="goHome()">←</button>
+            <div class="setup-heading">
+                <div class="setup-title" id="setupTitle">Game Setup</div>
+                <div class="setup-subtitle" id="setupSub">Pick your vibe</div>
+            </div>
+        </div>
+
+        <div class="section-label">Question Style</div>
+        <div class="category-pills" id="categoryPills"></div>
+
+        <div class="players-section" id="playersSection" style="display:none">
+            <div class="section-label">Players</div>
+            <div class="player-inputs" id="playerInputs">
+                <div class="player-row">
+                    <input class="player-input" type="text" placeholder="Player 1 name…" maxlength="18">
+                </div>
+                <div class="player-row">
+                    <input class="player-input" type="text" placeholder="Player 2 name…" maxlength="18">
+                </div>
+            </div>
+            <button class="add-player-btn" onclick="addPlayer()">+ Add another player</button>
+        </div>
+
+        <div id="partyExtrasSection" style="display:none">
+            <span class="toggle-group-label">Punishments</span>
+            <div class="toggle-row">
+                <div class="toggle-info">
+                    <span class="toggle-label">🍺 Drinks</span>
+                    <span class="toggle-sublabel">Dodge a question → take drinks</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggleDrinks">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="toggle-row">
+                <div class="toggle-info">
+                    <span class="toggle-label">🎯 Dares</span>
+                    <span class="toggle-sublabel">Dodge a question → do a dare</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggleDares">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <span class="toggle-group-label">Drinking Game</span>
+            <div class="toggle-row">
+                <div class="toggle-info">
+                    <span class="toggle-label">🍻 Drinking Game</span>
+                    <span class="toggle-sublabel">Random drink rounds + nomination shots</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggleDrinking">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <p class="error-msg" id="errorMsg">Please enter at least 2 player names!</p>
+        <button class="start-btn" onclick="startGame()">Let's Go! 🚀</button>
+    </div>
+</div>
+
+<!-- ════ GAME ════ -->
+<div class="screen" id="gameScreen">
+    <div class="screen-inner">
+        <div class="game-header">
+            <button class="back-btn" onclick="goHome()">←</button>
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill" style="width:0%"></div>
+            </div>
+            <span class="q-counter" id="qCounter">1 / 20</span>
+        </div>
+
+        <div class="q-card" id="qCard">
+            <div class="q-card-shine"></div>
+            <div>
+                <div class="cat-badge" id="catBadge">🌍 General</div>
+                <div class="q-text" id="qText">…</div>
+            </div>
+            <div class="q-deco" id="qDeco">🤔</div>
+        </div>
+
+        <div class="punish-banner" id="punishBanner" style="display:none">
+            <div class="punish-icon" id="punishIcon">🍺</div>
+            <div class="punish-body">
+                <div class="punish-label">Didn't answer?</div>
+                <div class="punish-text" id="punishText">Take 3 drinks!</div>
+            </div>
+        </div>
+
+        <div class="game-actions">
+            <button class="skip-btn" onclick="advance()">Skip</button>
+            <button class="next-btn" onclick="advance()">Next Question →</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════ TRANSITION ════ -->
+<div id="transitionScreen">
+    <div id="tsCatLabel"></div>
+    <div id="tsStart">START!</div>
+</div>
+
+<!-- ════ END ════ -->
+<div class="screen" id="endScreen">
+    <div class="screen-inner">
+        <div class="end-emoji">🎊</div>
+        <div class="end-title">That's a wrap!</div>
+        <p class="end-sub">Hope things aren't too awkward now… 😅<br>Or maybe that was the point.</p>
+        <div class="end-actions">
+            <button class="play-again-btn" onclick="playAgain()">Play Again 🔄</button>
+            <button class="home-btn" onclick="goHome()">Back to Home</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════ DRINK SCREEN ════ -->
+<div class="drink-screen" id="drinkScreen">
+    <div class="drink-screen-bg"></div>
+    <div class="ds-emoji" id="dsEmoji">🍺</div>
+    <div class="ds-title" id="dsTitle">DRINK UP!</div>
+    <div class="ds-desc" id="dsDesc">…</div>
+    <button class="ds-continue" onclick="closeDrinkScreen()">Keep Playing →</button>
+</div>
+
+<!-- ════ NOMINATION SHEET ════ -->
+<div class="nom-backdrop" id="nomBackdrop" onclick="closeNomination()"></div>
+<div class="nom-sheet" id="nomSheet">
+    <div class="nom-sheet-title">Who got named? 👇</div>
+    <div class="nom-players" id="nomPlayers"></div>
+    <button class="nom-skip-btn" onclick="closeNomination()">Nobody — skip ✕</button>
+</div>
+
+<!-- ════ DRINK TOAST ════ -->
+<div class="drink-toast" id="drinkToast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════════
+
+const PILL_CONFIGS = {
+    party: [
+        { cat: 'chaos',         label: '🔥 Chaos',             rec: true  },
+        { cat: 'spicy',         label: '🌶️ Spicy',            rec: true  },
+        { cat: 'controversial', label: '💣 Controversial',     rec: true  },
+        { cat: 'general',       label: '🌍 General',           rec: false },
+        { cat: 'ethical',       label: '⚖️ Ethical',           rec: false },
+        { cat: 'deep',          label: '🌊 Deep & Meaningful', rec: false },
+        { cat: 'random',        label: '🎲 Random Mix',        rec: false },
+    ],
+    general: [
+        { cat: 'general',       label: '🌍 General',           rec: false },
+        { cat: 'spicy',         label: '🌶️ Spicy',            rec: false },
+        { cat: 'deep',          label: '🌊 Deep & Meaningful', rec: false },
+        { cat: 'ethical',       label: '⚖️ Ethical',           rec: false },
+        { cat: 'controversial', label: '💣 Controversial',     rec: false },
+        { cat: 'chaos',         label: '🔥 Chaos',             rec: false },
+        { cat: 'random',        label: '🎲 Random Mix',        rec: false },
+    ],
+};
+
+function renderCategoryPills(mode) {
+    const container = document.getElementById('categoryPills');
+    const configs = PILL_CONFIGS[mode];
+    container.innerHTML = configs.map(({ cat, label, rec }, i) =>
+        `<button class="cat-pill${i === 0 ? ' active' : ''}" data-cat="${cat}" onclick="selectCat(this)">${label}${rec ? '<span class="pill-rec">★ Recommended</span>' : ''}</button>`
+    ).join('');
+    state.category = configs[0].cat;
+}
+
+const DARES = [
+    "Let the group scroll your camera roll for 30 seconds",
+    "Do your best impression of someone in the room — they vote if it passes",
+    "Send an embarrassing text to the last person you messaged",
+    "Speak in an accent chosen by the group for the next 3 questions",
+    "Let the group post one thing to your Instagram story",
+    "Call someone and say 'we need to talk' then hang up immediately",
+    "Let someone read your most recent sent message out loud",
+    "Do 15 press-ups right now",
+    "Show the group the last photo on your camera roll",
+    "Let the group read your last 5 Google searches out loud",
+    "Do a 30-second impression of the person to your left",
+    "Reveal the last person you searched on social media",
+    "Let someone change your profile picture for the next hour",
+    "Text your most recent ex a single heart emoji — right now",
+    "Let the group write and send one tweet from your account",
+    "Show everyone your screen time report for this week",
+    "Let someone read your last 3 DMs out loud",
+    "Do your best sexy walk across the room",
+];
+
+const DRINK_TYPES = [
+    (p, n) => ({ emoji:'🍺', title:'DRINK UP!',       desc:`<span class="ds-player">${p}</span> takes <strong>${n} drink${n>1?'s':''}!</strong>` }),
+    (p, n) => ({ emoji:'👑', title:'POWER MOVE!',      desc:`<span class="ds-player">${p}</span> hands out <strong>${n} drink${n>1?'s':''}</strong> to whoever they want!` }),
+    (p, n) => ({ emoji:'🥂', title:'SOCIAL!',          desc:`Everyone drinks! Take <strong>${Math.min(n,2)} drink${n>1?'s':''}.</strong> Cheers! 🥂` }),
+    (p, n) => ({ emoji:'🎯', title:'PICK YOUR VICTIM!',desc:`<span class="ds-player">${p}</span> points at someone right now — that person takes <strong>${n} drink${n>1?'s':''}!</strong>` }),
+    (p, n) => ({ emoji:'🔄', title:'WATERFALL!',       desc:`<span class="ds-player">${p}</span> starts drinking — everyone follows. Stop only when the person before you stops!` }),
+    (p, n) => ({ emoji:'🎲', title:'RANDOM ROUND!',    desc:`<span class="ds-player">${p}</span> rolls the vibe — assign <strong>${n} drink${n>1?'s':''}</strong> across the group however you like!` }),
+];
+
+const GRADIENTS = [
+    ['#FF6B6B','#FF8E53'],
+    ['#A855F7','#EC4899'],
+    ['#3B82F6','#06B6D4'],
+    ['#10B981','#3B82F6'],
+    ['#F59E0B','#EF4444'],
+    ['#8B5CF6','#EC4899'],
+    ['#EC4899','#F59E0B'],
+    ['#06B6D4','#10B981'],
+    ['#FF6B6B','#A855F7'],
+    ['#FFD93D','#FF6B6B'],
+];
+
+const CAT_META = {
+    general:      { emoji: '🌍', label: 'General',          decos: ['🤔','💭','🌍','🤷','😄','💡','🙃'] },
+    spicy:        { emoji: '🌶️', label: 'Spicy',            decos: ['🌶️','🔥','😏','😈','💋','🫦','😳'] },
+    deep:         { emoji: '🌊', label: 'Deep & Meaningful', decos: ['🌊','💙','🌙','✨','🪐','💫','🌌'] },
+    ethical:      { emoji: '⚖️', label: 'Ethical',          decos: ['⚖️','🤝','💭','🌱','🕊️','🔮','🧭'] },
+    controversial:{ emoji: '💣', label: 'Controversial',     decos: ['💣','⚡','🔪','💀','😤','🤯','💥'] },
+    chaos:        { emoji: '🔥', label: 'Chaos',             decos: ['🔥','😈','🌪️','💀','🤭','😏','👀'] },
+    random:       { emoji: '🎲', label: 'Random Mix',        decos: ['🎲','🎯','🎪','🃏','🎠','🎨','🎭'] },
+};
+
+// General mode: plain strings
+// Party mode: templates — {player} = target, {other} / {other1} / {other2} = other players
+const QUESTIONS = {
+    general: {
+        general: [
+            "If you could only eat one food for the rest of your life with zero nutritional consequences, what would you choose and why?",
+            "If you woke up tomorrow with a completely different identity, name, and life in a different country, what's the very first thing you'd do?",
+            "If you could swap lives with anyone in the world for exactly 24 hours, who would you choose — and what would you do with their life?",
+            "If you had to delete all but one app on your phone forever, which app saves your social life?",
+            "If you could instantly master one skill you currently have zero ability in, what would you choose?",
+            "If your life was being turned into a documentary, what would the title be?",
+            "If you could make one mundane thing free for everyone in the world forever, what would it be?",
+            "If you could be invisible for exactly one hour — once in your life — what would you do?",
+            "If you had to give up either music or films forever, which would you sacrifice?",
+            "If you could know exactly how you're going to die, but not when, would you want to know?",
+            "If you had a warning label on your personality, what would it say?",
+            "If you could go back and change one decision you've made in your life, what would it be?",
+            "If your personality was a weather forecast right now, what would it be?",
+            "If you could uninvent one thing that currently exists in the world, what would you choose?",
+            "If money was completely irrelevant, what would your life look like right now — be honest?",
+            "If you had to live the rest of your life in a different decade — past or future — which would you choose?",
+            "If you could pick one person from history to have dinner with, who would it be — and what's the first question you'd ask?",
+            "If all your belongings were destroyed tomorrow and you had to start over, what's the very first thing you'd replace?",
+            "If you could have a superpower that only worked on Tuesdays, what would you choose?",
+            "If you could only travel to three countries for the rest of your life, which three would you pick?",
+            "If you had to wear one outfit every single day for a year, what would it be?",
+            "If you could live inside any film's universe for a week, which film would you choose — and which character would you be?",
+            "If you woke up tomorrow with no memory of the last five years, what do you think would surprise you most about your life?",
+        ],
+        spicy: [
+            "If you had to describe your wildest sexual experience in one sentence — no names — how does it start?",
+            "If you could sleep with one person in this room, no consequences whatsoever, who would it be and why?",
+            "What's your biggest sexual kink that you've never admitted to a partner?",
+            "If you had to choose between a threesome with two people you found attractive, or never having sex again — which do you pick?",
+            "Have you ever been genuinely sexually attracted to someone of the same sex — and if so, did you ever act on it?",
+            "If you had to rate your own performance in bed out of 10, what are you giving yourself — and is it accurate?",
+            "What's the most inappropriate place you've ever had sex or done something sexual?",
+            "If you had to confess your actual body count right now, how close to the truth would the number you say actually be?",
+            "If you could only have sex in one position for the rest of your life, what's your choice?",
+            "What's the most extreme sexual thing you'd be willing to try if it stayed completely private forever?",
+            "If everyone in this room had to participate in an orgy and you couldn't leave, how would you handle that — honestly?",
+            "Have you ever had a sexual fantasy about someone in this room? You don't have to say who — just yes or no.",
+            "If you had to pick one person here to try something sexually you've never done before, who would it be?",
+            "What's a sex act you've always been curious about but been too embarrassed to bring up with a partner?",
+            "If you swapped bodies with the opposite sex for 24 hours, be honest — what's the first sexual thing you'd explore?",
+            "If someone offered you £10,000 to sleep with a stranger you found mildly attractive, would you do it?",
+        ],
+        deep: [
+            "If you could have one completely honest conversation with anyone — living or dead — who would it be, and what's the one thing you'd ask?",
+            "What's something you've never said in a room like this but sometimes wish you could?",
+            "If you could go back and give your 16-year-old self one single piece of advice, what would it be?",
+            "What does a genuinely perfect day look like to you — be honest, not aspirational?",
+            "If today was your last day alive, what would you regret most not having done or said?",
+            "What's something you believe about yourself that the people closest to you would be genuinely surprised to hear?",
+            "If you had to describe what you're truly searching for in life right now in one sentence, what would it be?",
+            "What's the kindest thing anyone has ever done for you that you still think about?",
+            "If you could only be remembered for one thing after you're gone, what would you want it to be?",
+            "What's a version of yourself that you abandoned somewhere along the way that you sometimes miss?",
+            "If you had no fear of judgment from anyone, what would you do differently about your life tomorrow?",
+            "What's the most important lesson you've ever learned from a relationship — romantic or otherwise?",
+            "What part of yourself are you still trying to fully accept?",
+            "If you could press a button to know your true life purpose, would you press it — or would you rather figure it out yourself?",
+            "What does 'home' actually mean to you, and do you feel like you genuinely have it right now?",
+            "What's a chapter of your life that shaped you the most that very few people actually know about?",
+            "When was the last time you were truly proud of yourself — not for what you achieved, but for who you were?",
+        ],
+        ethical: [
+            "You find a wallet with £500 cash, a credit card, and a driver's licence inside. No one saw you find it. What do you actually do?",
+            "If you could press a button to end world poverty permanently, but it would erase all art, music, and culture from existence forever — do you press it?",
+            "Your best friend is cheating on their long-term partner. Do you stay quiet or say something — and if so, to whom?",
+            "If you could secretly take one person's success and give it to yourself with absolutely no consequences — would you?",
+            "You witness a stranger stealing food from a supermarket. They look hungry. Do you say anything?",
+            "Would you lie under oath to protect someone you deeply love from a prison sentence they genuinely deserve?",
+            "If you could go back in time and prevent one historical atrocity — but it would erase your own existence — would you do it?",
+            "Is it ever acceptable to lie if the lie causes no harm and makes someone genuinely happier?",
+            "If you could guarantee your child a safe, comfortable, happy life — but they'd never discover a deep passion — would you choose that for them?",
+            "Would you turn in a close friend if you found out they'd committed a serious crime several years ago?",
+            "If you could save five strangers from dying, or save one person you love — which would you choose?",
+            "You accidentally receive £10,000 into your bank account from a banking error. No one notices. What do you do?",
+            "Is it ever ethical to end a friendship to protect your own mental health — even if that person is going through a crisis?",
+            "If you found out you'd been unknowingly benefiting from someone else's misfortune your whole life, what would you do about it?",
+            "If eating meat suddenly became illegal, would you follow the law — or quietly break it?",
+            "If AI could accurately predict who would commit serious crimes, should society act on that information before any crime is committed?",
+        ],
+        controversial: [
+            "If you had to press a button to kill your best friend to save your entire family, would you press it — or let your family die?",
+            "If you could cheat on your partner once and they would never, ever find out, would you do it?",
+            "If someone offered you £1,000,000 to never speak to your closest friend again, would you take it?",
+            "If you could physically hurt someone who seriously hurt you, with zero legal consequences — would you?",
+            "Is cheating on a partner ever truly justified — and have you ever done something you'd privately class as cheating?",
+            "If your partner cheated on you once after ten years together, would you actually stay or leave — be honest about what you'd do, not what sounds good?",
+            "If you could guarantee financial freedom forever by committing one illegal act that harms no one directly, would you do it?",
+            "If a stranger directly threatened your family and you had the chance to seriously injure them first to prevent it, would you?",
+            "If you could press a button that causes serious misfortune to someone who wronged you badly — with no blowback to you — would you press it?",
+            "If £5,000,000 was guaranteed in your account in exchange for spending three years in prison for a crime you didn't commit, would you take the deal?",
+            "Is there an amount of money that would make you sleep with someone you found genuinely repulsive — and what is that number?",
+            "If your sibling committed a murder and came to you for help hiding it, what would you actually do?",
+            "If you knew for certain your partner was going to cheat on you in a year, would you cheat on them first?",
+            "If pressing a button would give you everything you've ever wanted but cut ten years off your life, do you press it?",
+            "If you could get away with stealing from a large corporation — no chance of getting caught — would you, and how much?",
+            "If your best friend's partner made a move on you and your best friend would never find out, what honestly happens?",
+        ],
+        chaos: [
+            "Who in this room is most likely to cheat on their partner — and does everyone already quietly think it?",
+            "Who in this room is the most two-faced — all smiles to your face but says something completely different behind your back?",
+            "Who in this room is most likely to be harbouring homosexual or bisexual feelings they haven't admitted to?",
+            "Who in this room do you find the least physically attractive — and are they aware of how the group feels?",
+            "Who could leave this group right now, and genuinely — hand on heart — nobody would really miss them?",
+            "Who in this room earns the least and is the most insecure about it?",
+            "Who in this room is probably the worst in bed — based purely on their personality?",
+            "Who in this room is most likely to peak in their 20s and spend the rest of their life talking about the old days?",
+            "Who in this room has definitely had a crush on someone else here and is hoping nobody has noticed?",
+            "Who in this room is secretly the most jealous of someone else here — and what do you think they're jealous of?",
+            "Who in this room is most likely to end up alone — and do they deep down already know it?",
+            "Who in this room has the most embarrassing secret they're currently hiding from the group?",
+            "Who in this room do you trust the least — and has something specific happened to make you feel that way?",
+            "Who in this room is the most emotionally immature — and are they offended by being asked that?",
+            "Who in this room is most likely to have the smallest sexual experience — and are they pretending otherwise?",
+        ],
+    },
+    party: {
+        general: [
+            "{player}, if you had to swap lives with either {other1} or {other2} for a whole year — who do you pick, and what's the first thing you'd do as them?",
+            "{player}, if {other} was a character from any film or TV show, who would they be — and why is it so accurate?",
+            "{player}, describe {other}'s current energy as a weather forecast.",
+            "{player}, who do you genuinely think would survive longer in a zombie apocalypse — you or {other}?",
+            "{player}, if you and {other} had to start a business together tomorrow with no plan, what would it end up being?",
+            "{player}, if {other1} and {other2} were both stranded on a desert island, who do you think would actually thrive — and who'd lose the plot first?",
+            "{player}, what's {other}'s most controversial hot take that they haven't shared today?",
+            "{player}, if {other} had a theme song that played every time they walked into a room, what would it be?",
+            "{player}, if you had to trust either {other1} or {other2} to plan your birthday — who's getting the job?",
+            "{player}, describe {other} as a TV show. What show is it — and what season are we in?",
+            "{player}, if {other} wrote a memoir, what would the title be?",
+            "{player}, what's the most likely thing {other} would do that no one in this room would be surprised by — but would still be chaotic?",
+            "{player}, if you had to nominate one person in this room to represent humanity to aliens, who would you send — and why?",
+            "{player}, if {other1} and {other2} were stuck in a lift together for three hours with no phones, what do you think would actually happen?",
+            "{player}, if you had to swap wardrobes with anyone in this room for a month, who would you choose?",
+            "{player}, if {other} was a snack food, what would they be — and does the description fit their personality?",
+            "{player}, if you had to move abroad with one person from this room and zero planning, who would you take?",
+            "{player}, what's one habit or quirk {other} has that you genuinely find endearing, even if it's a bit chaotic?",
+            "{player}, if the group had to vote someone out like a reality TV show right now, who do you think would go first — and are you worried it's you?",
+        ],
+        spicy: [
+            "{player} — f*ck, marry, kill: {other1}, {other2}, and yourself. Go.",
+            "{player} — on a scale of 1–10, how good do you think {other} is in bed? Be honest.",
+            "{player} — if you and {other} had a one-night stand, who do you think would be in charge?",
+            "{player} — what sex position do you think {other} is secretly obsessed with, and what makes you say that?",
+            "{player} — if you had to sleep with either {other1} or {other2} right now, no consequences, who are you choosing?",
+            "{player} — if you found out {other} had a wild sexual kink, what do you think it would be?",
+            "{player} — if you had to pick two people in this room for a threesome, who are you picking?",
+            "{player} — do you think {other} has ever been curious about someone of the same sex — and would they ever admit it?",
+            "{player} — rate {other}'s sex appeal out of 10. No lying.",
+            "{player} — out of everyone in this room, who do you think has the highest body count — and where does {other} rank on that list?",
+            "{player} — if {other} accidentally sent you an explicit photo, what do you actually do?",
+            "{player} — if you had to describe {other}'s performance in bed based purely on their personality, what are you expecting?",
+            "{player} — would you rather have a one-night stand with {other1} or a long-term relationship with {other2}?",
+            "{player} — if {other} confessed a sexual fantasy to you right now, what do you think it would involve?",
+            "{player} — if everyone here had to pair up for a night, who would you most want {other} to end up with — and is it you?",
+        ],
+        deep: [
+            "{player}, what's one thing you genuinely admire about {other} that you've never actually said to their face?",
+            "{player}, if {other} was going through the worst time of their life, what's the one thing you'd do for them without being asked?",
+            "{player}, what do you think {other}'s biggest fear is — and how close do you think you are to knowing the real them?",
+            "{player}, describe {other} in exactly three words to a complete stranger who's never met them.",
+            "{player}, what's one piece of life advice you'd give {other} that you genuinely think they need to hear?",
+            "{player}, what's something {other} does that they probably don't realise makes a real difference to the people around them?",
+            "{player}, if {other} could change one thing about how they see themselves, what do you think it should be?",
+            "{player}, what moment in your relationship with {other} do you think quietly shaped who you both are?",
+            "{player}, what's something {other} hasn't done yet that you genuinely believe they'd be brilliant at?",
+            "{player}, if you could give {other} one memory from your perspective of them — one that showed them how others actually see them — what would you give them?",
+            "{player}, what's a version of {other} that you've witnessed that not everyone gets to see?",
+            "{player}, is there something you've been meaning to say to {other} that you keep putting off?",
+            "{player}, if {other1} and {other2} both needed your help urgently at the same time and you could only go to one — who do you go to first?",
+        ],
+        ethical: [
+            "{player}, if {other} asked you to lie to cover for them — and it would genuinely get them out of serious trouble — would you do it?",
+            "{player}, if you found out {other} had been hiding something significant from you for years, what would you do?",
+            "{player}, if you could secretly fix one thing in {other}'s life without them ever knowing it was you, what would it be?",
+            "{player}, if {other} confessed something truly shocking to you right now, do you think you could keep it secret forever?",
+            "{player}, if {other1} and {other2} were both in real trouble at the same time and you could only help one — who gets your help first, and why?",
+            "{player}, if you found out {other} had done something morally wrong in their past — nothing illegal, just genuinely wrong — would it change how you see them?",
+            "{player}, if you had to choose between telling {other} a painful truth or a comforting lie, which would you choose — and does it depend on what it's about?",
+            "{player}, if {other} made a decision you knew would hurt them in the long run, would you say something even if they hadn't asked for your opinion?",
+        ],
+        controversial: [
+            "{player} — if you had to press a button to kill {other} to save your entire family, would you press it?",
+            "{player} — if you could cheat on your partner with {other} and they'd never find out, would you?",
+            "{player} — if someone offered you £500,000 to ghost {other} forever with no explanation, would you take it?",
+            "{player} — if you and {other} were both in genuine life-threatening danger and only one of you could survive, what honestly happens?",
+            "{player} — do you think {other} would cheat on a partner if they were 100% sure they'd never get caught?",
+            "{player} — if {other} did something truly unforgivable to you, what's the most extreme thing you think you'd actually be capable of?",
+            "{player} — if you had to choose between {other1} and {other2} to take a bullet for you, who are you choosing?",
+            "{player} — if {other} asked you to help them do something seriously illegal but no one would ever get hurt, would you help?",
+            "{player} — if you found out {other} had been two-faced about you to the rest of the group, what would you actually do?",
+            "{player} — if {other} was about to make the worst decision of their life and you couldn't stop them with words, how far would you go?",
+        ],
+        chaos: [
+            "{player} — who in this room do you find the least physically attractive? You have to answer.",
+            "{player} — who in this room is most likely to be secretly gay or bisexual and just hasn't said anything yet?",
+            "{player} — who here would you least want to be trapped in a room alone with for 24 hours, and why?",
+            "{player} — who in this room is the most two-faced, and does that person know you think that?",
+            "{player} — who could leave this group right now and honestly, you'd barely notice they were gone?",
+            "{player} — who in this room do you think is worst in bed, based on their personality alone?",
+            "{player} — who do you trust the least in this room — and has something specific happened to make you feel that way?",
+            "{player} — who in this room earns the least and is the most insecure about it?",
+            "{player} — who here is most likely to peak in their 20s and never do anything more impressive with their life?",
+            "{player} — who in this room has definitely had feelings for someone else here and is desperately hoping no one's noticed?",
+            "{player} — who do you think has the smallest sexual experience out of everyone here — and are they aware people think that?",
+            "{player} — who in this room is most likely to cheat on their partner, and are they in denial about it?",
+            "{player} — if you had to vote one person out of this friend group permanently, who are you voting for?",
+        ],
+    },
+};
+
+// ═══════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════
+
+let state = {
+    mode: 'general',
+    category: 'general',
+    players: [],
+    questions: [],
+    index: 0,
+    punishDrinks: false,
+    punishDares: false,
+    drinkingGame: false,
+    drinkScreens: new Set(),
+    currentDrinkAmount: 0,
+};
+
+// ═══════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════
+
+function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════
+//  HOME
+// ═══════════════════════════════════════════════════
+
+function selectMode(mode) {
+    state.mode = mode;
+    document.getElementById('setupTitle').textContent = mode === 'party' ? 'Party Mode' : 'Discussion Mode';
+    document.getElementById('setupSub').textContent   = mode === 'party' ? 'Add your squad below' : 'Pick your vibe';
+    document.getElementById('playersSection').style.display      = mode === 'party' ? 'block' : 'none';
+    document.getElementById('partyExtrasSection').style.display  = mode === 'party' ? 'block' : 'none';
+    renderCategoryPills(mode);
+    showScreen('setupScreen');
+}
+
+function goHome() {
+    resetPlayerInputs();
+    showScreen('homeScreen');
+}
+
+// ═══════════════════════════════════════════════════
+//  SETUP
+// ═══════════════════════════════════════════════════
+
+function selectCat(btn) {
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    state.category = btn.dataset.cat;
+}
+
+function addPlayer() {
+    const container = document.getElementById('playerInputs');
+    const count = container.children.length + 1;
+    if (count > 12) return;
+    const row = document.createElement('div');
+    row.className = 'player-row';
+    row.innerHTML = `<input class="player-input" type="text" placeholder="Player ${count} name…" maxlength="18">
+                     <button class="remove-btn" onclick="removePlayer(this)">✕</button>`;
+    container.appendChild(row);
+}
+
+function removePlayer(btn) {
+    btn.closest('.player-row').remove();
+    // Refresh placeholders
+    document.querySelectorAll('#playerInputs .player-input').forEach((el, i) => {
+        if (!el.value) el.placeholder = `Player ${i + 1} name…`;
+    });
+}
+
+function resetPlayerInputs() {
+    document.getElementById('playerInputs').innerHTML = `
+        <div class="player-row"><input class="player-input" type="text" placeholder="Player 1 name…" maxlength="18"></div>
+        <div class="player-row"><input class="player-input" type="text" placeholder="Player 2 name…" maxlength="18"></div>`;
+}
+
+function getPlayerNames() {
+    return [...document.querySelectorAll('#playerInputs .player-input')]
+        .map(i => i.value.trim()).filter(Boolean);
+}
+
+function buildQuestions() {
+    const pool = QUESTIONS[state.mode];
+    let qs;
+    if (state.category === 'random') {
+        qs = [
+            ...pool.general.map(t       => ({ text: t, cat: 'general'       })),
+            ...pool.spicy.map(t         => ({ text: t, cat: 'spicy'         })),
+            ...pool.deep.map(t          => ({ text: t, cat: 'deep'          })),
+            ...pool.ethical.map(t       => ({ text: t, cat: 'ethical'       })),
+            ...pool.controversial.map(t => ({ text: t, cat: 'controversial' })),
+            ...pool.chaos.map(t         => ({ text: t, cat: 'chaos'         })),
+        ];
+    } else {
+        qs = pool[state.category].map(t => ({ text: t, cat: state.category }));
+    }
+    // Filter party questions that need 2+ others when only 2 players
+    if (state.mode === 'party' && state.players.length < 3) {
+        qs = qs.filter(q => !q.text.includes('{other2}'));
+    }
+    // Always return exactly 20 — cycle through the pool if it's smaller
+    let pool20 = shuffle(qs);
+    while (pool20.length < 20) pool20 = [...pool20, ...shuffle(qs)];
+    return pool20.slice(0, 20);
+}
+
+function startGame() {
+    if (state.mode === 'party') {
+        const names = getPlayerNames();
+        if (names.length < 2) {
+            const err = document.getElementById('errorMsg');
+            err.classList.add('show');
+            setTimeout(() => err.classList.remove('show'), 2800);
+            return;
+        }
+        state.players = names;
+        state.punishDrinks  = document.getElementById('toggleDrinks').checked;
+        state.punishDares   = document.getElementById('toggleDares').checked;
+        state.drinkingGame  = document.getElementById('toggleDrinking').checked;
+        state.drinkScreens  = state.drinkingGame ? generateDrinkScreens(20) : new Set();
+    } else {
+        state.punishDrinks = false;
+        state.punishDares  = false;
+        state.drinkingGame = false;
+        state.drinkScreens = new Set();
+    }
+    state.questions = buildQuestions();
+    state.index = 0;
+    startGameAudio();
+    runTransition(() => {
+        showScreen('gameScreen');
+        renderQuestion();
+    });
+}
+
+function generateDrinkScreens(total) {
+    const s = new Set();
+    let next = Math.floor(Math.random() * 2) + 3;
+    while (next < total) {
+        s.add(next);
+        next += Math.floor(Math.random() * 3) + 3;
+    }
+    return s;
+}
+
+// ═══════════════════════════════════════════════════
+//  GAME
+// ═══════════════════════════════════════════════════
+
+function normalizeQuestion(text) {
+    if (/^hypothetically/i.test(text)) return text;
+    return 'Hypothetically, ' + text.charAt(0).toLowerCase() + text.slice(1);
+}
+
+function resolveTemplate(q) {
+    const normalized = normalizeQuestion(q.text);
+    if (state.mode === 'general') {
+        return { html: escHtml(normalized), cat: q.cat, isNomination: false, drinkAmount: 0 };
+    }
+
+    // A question is a "nomination" if no specific other player is pre-designated
+    // (i.e. the template doesn't reference {other}, {other1}, or {other2})
+    const isNomination = !q.text.includes('{other');
+
+    const players = state.players;
+    const targetIdx = Math.floor(Math.random() * players.length);
+    const target = players[targetIdx];
+    const others = shuffle(players.filter((_, i) => i !== targetIdx));
+
+    const templated = normalized
+        .split('{player}').join('\x01')
+        .split('{other1}').join('\x02')
+        .split('{other2}').join('\x03')
+        .split('{other}').join('\x02');
+
+    let html = escHtml(templated)
+        .split('\x01').join(`<span class="player-name">${escHtml(target)}</span>`)
+        .split('\x02').join(`<span class="other-name">${escHtml(others[0] || target)}</span>`)
+        .split('\x03').join(`<span class="other-name">${escHtml(others[1] || others[0] || target)}</span>`);
+
+    // For nomination questions with drinking game on, embed the drink rule into the card
+    let drinkAmount = 0;
+    if (state.drinkingGame && isNomination) {
+        drinkAmount = Math.floor(Math.random() * 4) + 1;
+        html += `<div class="q-drink-rule">🍺 Whoever gets named takes <strong>${drinkAmount}</strong> drink${drinkAmount > 1 ? 's' : ''}!</div>`;
+    }
+
+    return { html, cat: q.cat, isNomination, drinkAmount };
+}
+
+function buildCardHtml(resolved) {
+    return resolved.html;
+}
+
+function renderQuestion() {
+    const q = state.questions[state.index];
+    const resolved = resolveTemplate(q);
+    const meta = CAT_META[q.cat];
+    const total = state.questions.length;
+
+    // Card gradient
+    const card = document.getElementById('qCard');
+    const [c1, c2] = GRADIENTS[state.index % GRADIENTS.length];
+    card.style.background = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
+
+    // Badge
+    document.getElementById('catBadge').textContent = `${meta.emoji} ${meta.label}`;
+
+    // Question text with highlights
+    document.getElementById('qText').innerHTML = buildCardHtml(resolved);
+
+    // Decoration emoji
+    document.getElementById('qDeco').textContent = pick(meta.decos);
+
+    // Progress
+    const pct = ((state.index + 1) / total * 100).toFixed(1);
+    document.getElementById('progressFill').style.width = `${pct}%`;
+    document.getElementById('qCounter').textContent = `${state.index + 1} / ${total}`;
+
+    // Punishment banner
+    const banner = document.getElementById('punishBanner');
+    if (state.punishDrinks || state.punishDares) {
+        const useDrink = state.punishDrinks && (!state.punishDares || Math.random() > 0.5);
+        if (useDrink) {
+            const n = Math.floor(Math.random() * 4) + 1;
+            document.getElementById('punishIcon').textContent = '🍺';
+            document.getElementById('punishText').textContent = `Take ${n} drink${n > 1 ? 's' : ''}!`;
+        } else {
+            document.getElementById('punishIcon').textContent = '🎯';
+            document.getElementById('punishText').textContent = pick(DARES);
+        }
+        banner.style.display = 'flex';
+    } else {
+        banner.style.display = 'none';
+    }
+
+    state.currentDrinkAmount = resolved.drinkAmount;
+}
+
+function advance() {
+    const card = document.getElementById('qCard');
+    card.classList.add('out');
+    setTimeout(() => {
+        state.index++;
+        if (state.index >= state.questions.length) {
+            card.classList.remove('out');
+            showScreen('endScreen');
+            spawnConfetti();
+            return;
+        }
+        if (state.drinkingGame && state.drinkScreens.has(state.index)) {
+            card.classList.remove('out');
+            showDrinkScreen();
+            return;
+        }
+        renderQuestion();
+        card.classList.remove('out');
+        card.classList.add('in');
+        requestAnimationFrame(() => requestAnimationFrame(() => card.classList.remove('in')));
+    }, 220);
+}
+
+// ═══════════════════════════════════════════════════
+//  DRINK SCREEN
+// ═══════════════════════════════════════════════════
+
+function showDrinkScreen() {
+    const p    = escHtml(pick(state.players));
+    const n    = Math.floor(Math.random() * 4) + 1;
+    const type = pick(DRINK_TYPES)(p, n);
+    document.getElementById('dsEmoji').textContent  = type.emoji;
+    document.getElementById('dsTitle').textContent  = type.title;
+    document.getElementById('dsDesc').innerHTML     = type.desc;
+    document.getElementById('drinkScreen').classList.add('show');
+}
+
+function closeDrinkScreen() {
+    document.getElementById('drinkScreen').classList.remove('show');
+    renderQuestion();
+    const card = document.getElementById('qCard');
+    card.classList.add('in');
+    requestAnimationFrame(() => requestAnimationFrame(() => card.classList.remove('in')));
+}
+
+// ═══════════════════════════════════════════════════
+//  NOMINATIONS
+// ═══════════════════════════════════════════════════
+
+function openNomination() {
+    const container = document.getElementById('nomPlayers');
+    container.innerHTML = '';
+    state.players.forEach(name => {
+        const btn = document.createElement('button');
+        btn.className = 'nom-player-btn';
+        btn.textContent = name;
+        btn.onclick = () => nominatePlayer(name);
+        container.appendChild(btn);
+    });
+    document.getElementById('nomSheet').classList.add('show');
+    document.getElementById('nomBackdrop').classList.add('show');
+}
+
+function closeNomination() {
+    document.getElementById('nomSheet').classList.remove('show');
+    document.getElementById('nomBackdrop').classList.remove('show');
+}
+
+function nominatePlayer(name) {
+    const n = state.currentDrinkAmount || Math.floor(Math.random() * 4) + 1;
+    closeNomination();
+    showDrinkToast(`${name} takes ${n} drink${n > 1 ? 's' : ''}! 🍺`);
+}
+
+function showDrinkToast(msg) {
+    const t = document.getElementById('drinkToast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function playAgain() {
+    state.questions = buildQuestions();
+    state.index = 0;
+    startGameAudio();
+    runTransition(() => {
+        showScreen('gameScreen');
+        renderQuestion();
+    });
+}
+
+// ═══════════════════════════════════════════════════
+//  CONFETTI
+// ═══════════════════════════════════════════════════
+
+function spawnConfetti() {
+    const container = document.getElementById('confetti');
+    const colors = ['#FF6B6B','#FF8E53','#FFD93D','#A855F7','#EC4899','#3B82F6','#10B981','#f093fb'];
+    for (let i = 0; i < 70; i++) {
+        setTimeout(() => {
+            const el = document.createElement('div');
+            el.className = 'cp';
+            const size = Math.random() * 10 + 6;
+            el.style.cssText = `
+                left: ${Math.random() * 100}%;
+                width: ${size}px; height: ${size}px;
+                background: ${pick(colors)};
+                border-radius: ${Math.random() > 0.45 ? '50%' : '3px'};
+                animation-duration: ${(Math.random() * 2 + 2).toFixed(2)}s;
+                animation-delay: ${(Math.random() * 0.6).toFixed(2)}s;
+                opacity: 1;
+            `;
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 4500);
+        }, i * 25);
+    }
+}
+
+// ═══════════════════════════════════════════════════
+//  AUDIO
+// ═══════════════════════════════════════════════════
+const TRACKS = {
+    mainmenu:      new Audio('music/mainmenu.mp3'),
+    spicy:         new Audio('music/spicy.mp3'),
+    chaos:         new Audio('music/chaos.mp3'),
+    controversial: new Audio('music/controversial.mp3'),
+    everything:    new Audio('music/everything.mp3'),
+};
+const TARGET_VOL = 0.6;
+Object.values(TRACKS).forEach(a => { a.loop = true; a.volume = 0; });
+
+let _currentTrack = null;
+let _muted = false;
+let _audioUnlocked = false;
+
+function getGameTrack(cat) {
+    if (cat === 'spicy')         return 'spicy';
+    if (cat === 'chaos')         return 'chaos';
+    if (cat === 'controversial') return 'controversial';
+    return 'everything';
+}
+
+function playTrack(name) {
+    if (_currentTrack === name) return;
+    const next = TRACKS[name];
+    const prev = _currentTrack ? TRACKS[_currentTrack] : null;
+    _currentTrack = name;
+
+    if (prev) {
+        const fadeOut = setInterval(() => {
+            prev.volume = Math.max(0, +(prev.volume - 0.05).toFixed(2));
+            if (prev.volume <= 0) { clearInterval(fadeOut); prev.pause(); prev.currentTime = 0; }
+        }, 40);
+    }
+
+    if (_muted) return;
+    next.currentTime = 0;
+    next.play().catch(() => {});
+    const fadeIn = setInterval(() => {
+        next.volume = Math.min(TARGET_VOL, +(next.volume + 0.05).toFixed(2));
+        if (next.volume >= TARGET_VOL) clearInterval(fadeIn);
+    }, 40);
+}
+
+function toggleMute() {
+    _muted = !_muted;
+    const btn = document.getElementById('muteBtn');
+    btn.textContent = _muted ? '🔇' : '🔊';
+    btn.classList.toggle('muted', _muted);
+    if (_muted) {
+        Object.values(TRACKS).forEach(a => { a.volume = 0; a.pause(); });
+    } else if (_currentTrack) {
+        const t = TRACKS[_currentTrack];
+        t.currentTime = 0;
+        t.play().catch(() => {});
+        const fadeIn = setInterval(() => {
+            t.volume = Math.min(TARGET_VOL, +(t.volume + 0.05).toFixed(2));
+            if (t.volume >= TARGET_VOL) clearInterval(fadeIn);
+        }, 40);
+    }
+}
+
+// Start mainmenu on first user interaction (browser autoplay policy)
+function _unlockAudio() {
+    if (_audioUnlocked) return;
+    _audioUnlocked = true;
+    document.removeEventListener('click', _unlockAudio);
+    if (!_muted && _currentTrack) {
+        const t = TRACKS[_currentTrack];
+        t.play().catch(() => {});
+        const fadeIn = setInterval(() => {
+            t.volume = Math.min(TARGET_VOL, +(t.volume + 0.05).toFixed(2));
+            if (t.volume >= TARGET_VOL) clearInterval(fadeIn);
+        }, 40);
+    }
+}
+document.addEventListener('click', _unlockAudio);
+
+// Patch showScreen to drive music
+const _origShowScreen = showScreen;
+showScreen = function(id) {
+    _origShowScreen(id);
+    if (id !== 'gameScreen') playTrack('mainmenu');
+};
+
+// Queue mainmenu immediately (will actually play on first click)
+_currentTrack = 'mainmenu';
+
+function startGameAudio() {
+    playTrack(getGameTrack(state.category));
+}
+
+// ═══════════════════════════════════════════════════
+//  TRANSITION SCREEN
+// ═══════════════════════════════════════════════════
+const TS_CONFIG = {
+    general:       { label: '🌍 General',           anim: 'anim-fade-scale'  },
+    spicy:         { label: '🌶️ Spicy',            anim: 'anim-from-left'   },
+    chaos:         { label: '🔥 Chaos',             anim: 'anim-glitch'      },
+    controversial: { label: '💣 Controversial',     anim: 'anim-from-top'    },
+    ethical:       { label: '⚖️ Ethical',           anim: 'anim-from-bottom' },
+    deep:          { label: '🌊 Deep & Meaningful', anim: 'anim-from-right'  },
+    random:        { label: '🎲 Random Mix',         anim: 'anim-spin-in'     },
+};
+
+const _whistleAudio = new Audio('music/whistle.mp3');
+
+function playWhistle() {
+    try {
+        _whistleAudio.currentTime = 0;
+        _whistleAudio.play().catch(() => {});
+    } catch(e) {}
+}
+
+function runTransition(callback) {
+    const cat = state.category;
+    const cfg = TS_CONFIG[cat] || TS_CONFIG.general;
+    const ts  = document.getElementById('transitionScreen');
+    const lbl = document.getElementById('tsCatLabel');
+    const st  = document.getElementById('tsStart');
+
+    // reset
+    ts.className = '';
+    lbl.className = '';
+    lbl.textContent = cfg.label;
+    st.className = '';
+    st.style.opacity = '0';
+
+    // show screen with gradient
+    ts.classList.add('ts-visible', `ts-${cat}`);
+
+    // 180ms: animate category label in
+    setTimeout(() => {
+        lbl.classList.add(cfg.anim);
+    }, 180);
+
+    // 1030ms: START! pops in + whistle
+    setTimeout(() => {
+        st.classList.add('ts-start-show');
+        playWhistle();
+    }, 1030);
+
+    // 1700ms: render game screen underneath, then start fade out
+    setTimeout(() => {
+        callback();
+        ts.classList.add('ts-out');
+    }, 1700);
+
+    // 2000ms: clean up overlay
+    setTimeout(() => {
+        ts.className = '';
+    }, 2000);
+}
+
+// ═══════════════════════════════════════════════════
+//  INTRO (first load only)
+// ═══════════════════════════════════════════════════
+document.getElementById('homeScreen').classList.add('intro');
+</script>
+</body>
+</html>
