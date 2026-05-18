@@ -6,6 +6,7 @@
     <title>Hypothetically...</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -120,9 +121,10 @@
             transition: transform 0.15s, box-shadow 0.15s;
         }
         .mode-card:active { transform: scale(0.97); }
-        .mode-card-general { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .mode-card-party   { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-        .mode-card-couples { background: linear-gradient(135deg, #ff8a80 0%, #ff5252 100%); }
+        .mode-card-general  { background: linear-gradient(135deg, #90c4e8 0%, #4a9fd4 100%); }
+        .mode-card-party    { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .mode-card-couples  { background: linear-gradient(135deg, #ff8a80 0%, #ff5252 100%); }
+        .mode-card-hotseat  { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         .mode-card::after {
             content: '→';
             position: absolute; right: 24px; top: 50%;
@@ -174,6 +176,8 @@
         .cat-pill[data-cat="random"].active       { background: linear-gradient(135deg, #fa709a, #fee140); }
         .cat-pill[data-cat="roast"].active        { background: linear-gradient(135deg, #ff6a00, #ee0979); }
         .cat-pill[data-cat="us"].active           { background: linear-gradient(135deg, #f953c6, #fc466b); }
+        .cat-pill[data-cat="pg13"].active         { background: linear-gradient(135deg, #43e97b, #38ef7d); }
+        .cat-pill[data-cat="r18"].active          { background: linear-gradient(135deg, #f953c6, #b91d73); }
 
         /* Player inputs */
         .players-section { width: 100%; margin-bottom: 28px; }
@@ -277,23 +281,48 @@
 
         .q-card-shine {
             position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+            background: linear-gradient(135deg, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.06) 45%, transparent 70%);
             pointer-events: none;
+        }
+        .q-card::before {
+            content: '';
+            position: absolute;
+            bottom: 0; right: 0;
+            width: 55%; height: 55%;
+            background: radial-gradient(ellipse at bottom right, rgba(0,0,0,0.18) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .q-brand {
+            position: absolute;
+            bottom: 16px; right: 20px;
+            font-size: 24px; font-weight: 900;
+            color: rgba(255,255,255,0.70);
+            filter: drop-shadow(0 1px 4px rgba(0,0,0,0.45));
+            letter-spacing: 1px; font-style: italic;
+            pointer-events: none; user-select: none;
+        }
+        .q-brand-gradient {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53, #FFD93D);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .cat-badge {
             display: inline-flex; align-items: center; gap: 5px;
             background: rgba(255,255,255,0.22);
-            border-radius: 50px; padding: 5px 13px;
-            font-size: 11px; font-weight: 800;
+            border-radius: 50px; padding: 7px 16px;
+            font-size: 14px; font-weight: 800;
             color: white; text-transform: uppercase; letter-spacing: 1.2px;
             align-self: flex-start; margin-bottom: 22px;
         }
 
         .q-text {
-            font-size: 21px; font-weight: 800;
+            font-size: 27px; font-weight: 800;
             color: white; line-height: 1.45;
             flex: 1;
+            margin-top: 50px;
+            text-shadow: 0 1px 8px rgba(0,0,0,0.18);
         }
         .q-text .player-name {
             background: rgba(255,255,255,0.28);
@@ -306,10 +335,32 @@
             padding: 1px 6px;
         }
 
-        .q-deco {
-            font-size: 58px; text-align: right;
-            opacity: 0.25; margin-top: 18px; line-height: 1; align-self: flex-end;
+        .q-deco-layer {
+            position: absolute; inset: 0;
+            pointer-events: none; overflow: hidden;
+            border-radius: 32px;
         }
+        .q-deco-layer::after {
+            content: '';
+            position: absolute; bottom: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 260px; height: 200px;
+            background: radial-gradient(ellipse at bottom, rgba(255,255,255,0.13) 0%, transparent 70%);
+        }
+        .q-deco-float {
+            position: absolute; line-height: 1;
+            user-select: none; pointer-events: none;
+            font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
+        }
+        .q-cat-title {
+            display: none;
+            font-size: clamp(30px, 9vw, 44px);
+            font-weight: 900; color: white;
+            line-height: 1.1; margin-bottom: 18px;
+            text-shadow: 0 2px 16px rgba(0,0,0,0.2);
+        }
+        .q-cat-title.show { display: block; }
+        .q-card > div:last-of-type { margin-top: 55px; }
         .q-drink-rule {
             margin-top: 16px;
             padding: 9px 14px;
@@ -326,18 +377,8 @@
             display: flex; gap: 12px;
             width: 100%; margin-top: 24px;
         }
-        .skip-btn {
-            flex: 1; padding: 16px; border-radius: 18px;
-            background: rgba(255,255,255,0.09);
-            border: 2px solid rgba(255,255,255,0.14);
-            color: rgba(255,255,255,0.65);
-            font-family: 'Nunito', sans-serif;
-            font-size: 14px; font-weight: 800;
-            cursor: pointer; transition: background 0.15s;
-        }
-        .skip-btn:active { background: rgba(255,255,255,0.14); }
         .next-btn {
-            flex: 2.2; padding: 16px; border-radius: 18px;
+            flex: 1; padding: 16px; border-radius: 18px;
             background: linear-gradient(135deg, #FF6B6B, #FF8E53);
             border: none; color: white;
             font-family: 'Nunito', sans-serif;
@@ -470,6 +511,13 @@
             cursor: pointer; transition: all 0.15s;
         }
         .share-done-btn:hover { color: rgba(255,255,255,0.6); }
+        .share-stories-btn {
+            width: 100%; padding: 11px; border-radius: 14px; margin-bottom: 8px;
+            background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.65); font-family: 'Nunito', sans-serif;
+            font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.15s;
+        }
+        .share-stories-btn:hover { background: rgba(255,255,255,0.13); color: white; }
 
         .share-btn {
             width: 100%; padding: 18px; border-radius: 20px;
@@ -533,6 +581,7 @@
         .cp-choice-card:active { transform: scale(0.97); }
         .cp-choice-card.create { background: linear-gradient(135deg, #f7971e, #ffd200); }
         .cp-choice-card.join   { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .cp-choice-card.import { background: linear-gradient(135deg, #11998e, #38ef7d); }
         .cp-choice-icon  { font-size: 36px; display: block; margin-bottom: 8px; }
         .cp-choice-title { font-size: 20px; font-weight: 900; color: white; margin-bottom: 4px; }
         .cp-choice-desc  { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.75); line-height: 1.4; }
@@ -552,6 +601,12 @@
         .saved-pack-info  { flex: 1; }
         .saved-pack-name  { font-size: 15px; font-weight: 800; color: white; }
         .saved-pack-count { font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 700; margin-top: 1px; }
+        .saved-pack-share {
+            padding: 6px 10px; border-radius: 8px;
+            background: rgba(99,102,241,0.2); border: none;
+            color: rgba(165,180,252,0.9); font-size: 12px; font-weight: 800;
+            cursor: pointer; white-space: nowrap;
+        }
         .saved-pack-del {
             padding: 6px 10px; border-radius: 8px;
             background: rgba(255,90,90,0.15); border: none;
@@ -949,6 +1004,8 @@
         #transitionScreen.ts-roast        { background: linear-gradient(135deg,#7f0000,#ee0979,#ff6a00); }
         #transitionScreen.ts-us           { background: linear-gradient(135deg,#6a0572,#f953c6,#fc466b); }
         #transitionScreen.ts-custom       { background: linear-gradient(135deg,#2d1b69,#7c3aed,#a78bfa); }
+        #transitionScreen.ts-pg13         { background: linear-gradient(135deg,#0d5c2e,#43e97b,#00b4d8); }
+        #transitionScreen.ts-r18          { background: linear-gradient(135deg,#4a0030,#f953c6,#b91d73); }
 
         #tsCatLabel {
             font-size: clamp(3.8rem, 13vw, 9rem);
@@ -1041,6 +1098,177 @@
         #homeScreen.intro .mode-cards .mode-card:nth-child(3) {
             animation: jumpLand 0.65s cubic-bezier(0.34, 1.3, 0.64, 1) 1.16s backwards;
         }
+        #homeScreen.intro .mode-cards .mode-card:nth-child(4) {
+            animation: jumpLand 0.65s cubic-bezier(0.34, 1.3, 0.64, 1) 1.30s backwards;
+        }
+
+        /* ════════════════════════════════
+           TONIGHT'S LINEUP
+        ════════════════════════════════ */
+        #lineupOverlay {
+            display: none; position: fixed; inset: 0;
+            background: #0a0615;
+            z-index: 450;
+            flex-direction: column; align-items: center; justify-content: center;
+            padding: 48px 32px;
+            cursor: pointer;
+        }
+        #lineupOverlay.show { display: flex; }
+        .lu-eyebrow {
+            font-size: 11px; font-weight: 800; letter-spacing: 4px;
+            text-transform: uppercase; color: rgba(255,255,255,0.22);
+            margin-bottom: 8px;
+        }
+        .lu-heading {
+            font-size: 13px; font-weight: 900; letter-spacing: 5px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #FF6B6B, #FF8E53, #FFD93D);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 52px;
+        }
+        .lu-names { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
+        .lu-name {
+            font-size: clamp(30px, 9vw, 52px);
+            font-weight: 900; color: white; text-align: center;
+            letter-spacing: -0.02em;
+            opacity: 0; transform: translateY(22px) scale(0.94);
+            transition: opacity 0.45s cubic-bezier(0.34,1.3,0.64,1),
+                        transform 0.45s cubic-bezier(0.34,1.3,0.64,1);
+            text-shadow: 0 0 40px rgba(255,255,255,0.15);
+        }
+        .lu-name.show { opacity: 1; transform: translateY(0) scale(1); }
+        .lu-gameon {
+            margin-top: 52px;
+            font-size: 28px; font-weight: 900; color: white;
+            letter-spacing: -0.01em;
+            opacity: 0; transform: scale(0.8);
+            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34,1.4,0.64,1);
+        }
+        .lu-gameon.show { opacity: 1; transform: scale(1); }
+        .lu-skip {
+            position: absolute; bottom: 28px;
+            font-size: 12px; font-weight: 800; letter-spacing: 2px;
+            text-transform: uppercase; color: rgba(255,255,255,0.2);
+            opacity: 0; transition: opacity 0.5s ease;
+        }
+        .lu-skip.show { opacity: 1; }
+
+        /* ════════════════════════════════
+           PARTY COMBINED TRANSITION
+        ════════════════════════════════ */
+        #transitionScreen.ts-party-mode {
+            justify-content: flex-start;
+            padding: 64px 32px 48px;
+            gap: 0;
+        }
+        #transitionScreen.ts-party-mode #tsCatLabel {
+            font-size: clamp(3rem, 10vw, 6rem);
+            margin-bottom: 40px;
+            align-self: center;
+        }
+        #transitionScreen.ts-party-mode #tsStart { display: none; }
+        #tsLineupNames {
+            display: none;
+            flex-direction: column; align-items: center;
+            gap: 10px; width: 100%; flex: 1;
+        }
+        #transitionScreen.ts-party-mode #tsLineupNames { display: flex; }
+        .ts-lineup-name {
+            font-size: clamp(36px, 10vw, 60px);
+            font-weight: 900; color: white; text-align: center;
+            letter-spacing: -0.02em;
+            opacity: 0; transform: translateY(18px);
+            transition: opacity 0.42s cubic-bezier(0.34,1.3,0.64,1),
+                        transform 0.42s cubic-bezier(0.34,1.3,0.64,1);
+            text-shadow: 0 2px 16px rgba(0,0,0,0.25);
+        }
+        .ts-lineup-name.show { opacity: 1; transform: translateY(0); }
+        #tsGameOn {
+            display: none;
+            font-size: clamp(40px, 11vw, 64px);
+            font-weight: 900; color: white; text-align: center;
+            opacity: 0; transform: scale(0.85);
+            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34,1.4,0.64,1);
+            margin-top: 28px;
+            filter: drop-shadow(0 0 20px rgba(255,180,0,0.7));
+        }
+        #transitionScreen.ts-party-mode #tsGameOn { display: block; }
+        #tsGameOn.show { opacity: 1; transform: scale(1); }
+
+        /* ════════════════════════════════
+           HOT SEAT — timer bar
+        ════════════════════════════════ */
+        .timer-bar {
+            display: none;
+            width: 100%; height: 8px; border-radius: 4px;
+            background: rgba(255,255,255,0.14);
+            margin-bottom: 20px; overflow: hidden;
+        }
+        .timer-bar.active { display: block; }
+        .timer-fill {
+            height: 100%; border-radius: 4px;
+            background: linear-gradient(90deg, #43e97b, #38ef7d);
+            transition: width 0.25s linear, background 0.5s ease;
+            width: 100%;
+        }
+        .timer-fill.danger { background: linear-gradient(90deg, #FF6B6B, #FF4040); }
+
+        /* ════════════════════════════════
+           HOT SEAT — times-up overlay
+        ════════════════════════════════ */
+        #timesUpOverlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(220, 30, 60, 0.93);
+            z-index: 300; flex-direction: column;
+            align-items: center; justify-content: center; gap: 16px;
+        }
+        #timesUpOverlay.show { display: flex; }
+        .tuo-emoji { font-size: 80px; animation: dsWiggle 0.4s ease infinite alternate; }
+        .tuo-title { font-size: 36px; font-weight: 900; color: white; text-align: center; }
+
+        /* ════════════════════════════════
+           HOT SEAT — dodge button
+        ════════════════════════════════ */
+        .dodge-btn {
+            flex: 1; padding: 16px; border-radius: 18px;
+            background: rgba(255,80,80,0.18);
+            border: 2px solid rgba(255,80,80,0.28);
+            color: #ff9999;
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px; font-weight: 800;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .dodge-btn:active { background: rgba(255,80,80,0.3); }
+
+        /* ════════════════════════════════
+           HOT SEAT SETUP SCREEN
+        ════════════════════════════════ */
+        .hotseat-desc {
+            width: 100%;
+            background: rgba(67,233,123,0.1);
+            border: 1.5px solid rgba(67,233,123,0.25);
+            border-radius: 16px;
+            padding: 14px 16px;
+            font-size: 13px; font-weight: 700;
+            color: rgba(255,255,255,0.75);
+            line-height: 1.5;
+            margin-bottom: 28px;
+        }
+        .time-btn-group { display: flex; gap: 8px; width: 100%; margin-top: 10px; }
+        .time-btn {
+            flex: 1; padding: 10px 6px; border-radius: 12px;
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.5);
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px; font-weight: 800;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .time-btn.active {
+            background: linear-gradient(135deg, #43e97b, #00b4d8);
+            border-color: transparent; color: white;
+        }
     </style>
 </head>
 <body>
@@ -1065,6 +1293,11 @@
                 <span class="mode-card-emoji">🎉</span>
                 <div class="mode-card-title">Party Mode</div>
                 <div class="mode-card-desc">Directed questions about the people you're with</div>
+            </button>
+            <button class="mode-card mode-card-hotseat" onclick="selectMode('hotseat')">
+                <span class="mode-card-emoji">🪑</span>
+                <div class="mode-card-title">Hot Seat Mode</div>
+                <div class="mode-card-desc">8 questions fired at one person — no escape</div>
             </button>
             <button class="mode-card mode-card-couples" onclick="selectMode('couples')">
                 <span class="mode-card-emoji">💑</span>
@@ -1112,6 +1345,11 @@
                 <span class="cp-choice-icon">🔗</span>
                 <div class="cp-choice-title">Join a Pack</div>
                 <div class="cp-choice-desc">Enter the creator's code and contribute your own questions</div>
+            </button>
+            <button class="cp-choice-card import" onclick="showImportModal()">
+                <span class="cp-choice-icon">📲</span>
+                <div class="cp-choice-title">Import a Pack</div>
+                <div class="cp-choice-desc">Paste an export code to add someone else's pack to your device</div>
             </button>
         </div>
     </div>
@@ -1165,6 +1403,8 @@
                     <div class="cp-code-label">Share this code</div>
                     <div class="cp-code-value" id="cpCode">----</div>
                     <button class="cp-copy-btn" id="cpCopyBtn" onclick="copyRoomCode()">Copy Code</button>
+                    <div id="cpQRCode" style="margin:14px auto 0;width:120px;height:120px;display:none"></div>
+                    <div id="cpQRLabel" style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px;display:none">Scan to get the code</div>
                 </div>
                 <div class="section-label">In the Room</div>
                 <div id="cpMembers" style="width:100%;margin-bottom:12px">
@@ -1310,6 +1550,76 @@
     </div>
 </div>
 
+<!-- ════ HOT SEAT SETUP ════ -->
+<div class="screen" id="hotSeatSetupScreen">
+    <div class="screen-inner">
+        <div class="setup-top">
+            <button class="back-btn" onclick="goHome()">←</button>
+            <div class="setup-heading">
+                <div class="setup-title">🪑 Hot Seat Mode</div>
+                <div class="setup-subtitle">8 questions. One person. No mercy.</div>
+            </div>
+        </div>
+
+        <div class="hotseat-desc">
+            One person sits in the hot seat and faces 8 back-to-back questions from the group. Everyone else watches — and judges.
+        </div>
+
+        <div class="section-label">Question Style</div>
+        <div class="category-pills" id="hotSeatPills"></div>
+
+        <div class="section-label" style="margin-top:8px">Hot Seat Player</div>
+        <div class="players-section" style="margin-bottom:20px">
+            <div class="player-inputs">
+                <div class="player-row">
+                    <input class="player-input" id="hsPlayerInput" type="text" placeholder="Who's in the hot seat?" maxlength="18">
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">The Rest of the Group <span style="color:rgba(255,255,255,0.28);font-weight:600;text-transform:none;letter-spacing:0">(optional)</span></div>
+        <div class="players-section" style="margin-bottom:20px">
+            <div class="player-inputs" id="hsOtherInputs">
+                <div class="player-row">
+                    <input class="player-input" type="text" placeholder="Other player name…" maxlength="18">
+                    <button class="remove-btn" onclick="removePlayer(this)">✕</button>
+                </div>
+            </div>
+            <button class="add-player-btn" id="hsAddBtn" onclick="hsAddPlayer()">+ Add another player</button>
+        </div>
+
+        <div class="toggle-row" style="margin-bottom:16px">
+            <div class="toggle-info">
+                <span class="toggle-label">🍺 Drinks for dodging</span>
+                <span class="toggle-sublabel">Dodge a question → 4 drinks, no exceptions</span>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="hsToggleDrinks">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <div class="toggle-row" style="margin-bottom:8px">
+            <div class="toggle-info">
+                <span class="toggle-label">⏱️ Time limit per question</span>
+                <span class="toggle-sublabel">Run out of time → automatic drink!</span>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="hsToggleTimer" onchange="toggleTimerButtons()">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="time-btn-group" id="timeBtnGroup" style="display:none;margin-bottom:20px">
+            <button class="time-btn active" data-secs="15" onclick="selectTimeLimit(this)">15s</button>
+            <button class="time-btn" data-secs="30" onclick="selectTimeLimit(this)">30s</button>
+            <button class="time-btn" data-secs="60" onclick="selectTimeLimit(this)">60s</button>
+        </div>
+
+        <p class="error-msg" id="hsErrorMsg">Enter the hot seat player's name!</p>
+        <button class="start-btn" onclick="startHotSeat()">Light 'em up! 🔥</button>
+    </div>
+</div>
+
 <!-- ════ GAME ════ -->
 <div class="screen" id="gameScreen">
     <div class="screen-inner">
@@ -1321,13 +1631,19 @@
             <span class="q-counter" id="qCounter">1 / 20</span>
         </div>
 
+        <div class="timer-bar" id="timerBar">
+            <div class="timer-fill" id="timerFill"></div>
+        </div>
+
         <div class="q-card" id="qCard">
             <div class="q-card-shine"></div>
+            <div class="q-deco-layer" id="qDecoLayer"></div>
+            <div class="q-brand">hypo<span class="q-brand-gradient">thetically...</span></div>
             <div>
+                <div class="q-cat-title" id="qCatTitle"></div>
                 <div class="cat-badge" id="catBadge">🌍 General</div>
                 <div class="q-text" id="qText">…</div>
             </div>
-            <div class="q-deco" id="qDeco">🤔</div>
         </div>
 
         <div class="punish-banner" id="punishBanner" style="display:none">
@@ -1339,16 +1655,27 @@
         </div>
 
         <div class="game-actions">
-            <button class="skip-btn" onclick="advance()">Skip</button>
+            <button class="dodge-btn" id="dodgeBtn" style="display:none" onclick="hotSeatDodged()">Dodged! 🍺</button>
             <button class="next-btn" onclick="advance()">Next Question →</button>
         </div>
     </div>
+</div>
+
+<!-- ════ TONIGHT'S LINEUP ════ -->
+<div id="lineupOverlay" onclick="_skipLineup()">
+    <div class="lu-eyebrow">hypothetically...</div>
+    <div class="lu-heading">Tonight's Lineup</div>
+    <div class="lu-names" id="luNames"></div>
+    <div class="lu-gameon" id="luGameOn">Game On 🔥</div>
+    <div class="lu-skip" id="luSkip">Tap anywhere to skip</div>
 </div>
 
 <!-- ════ TRANSITION ════ -->
 <div id="transitionScreen">
     <div id="tsCatLabel"></div>
     <div id="tsStart">START!</div>
+    <div id="tsLineupNames"></div>
+    <div id="tsGameOn">Game On 🔥</div>
 </div>
 
 <!-- ════ END ════ -->
@@ -1387,8 +1714,33 @@
                 <span class="so-icon">💾</span>Save
             </button>
         </div>
+        <button class="share-stories-btn" onclick="createShareCard('stories')">📱 Remake as Stories (9:16)</button>
         <button class="share-add-btn" onclick="addAnotherCard()">+ Add Another Highlight</button>
         <button class="share-done-btn" onclick="closeShareOverlay()">Done →</button>
+    </div>
+</div>
+
+<!-- ════ EXPORT CODE MODAL ════ -->
+<div id="exportOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:900;display:none;align-items:center;justify-content:center;padding:20px">
+    <div style="background:#1e1e2e;border-radius:24px;padding:28px 24px;width:100%;max-width:420px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:white;margin-bottom:6px" id="exportModalTitle">Share Pack</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:20px">Others can scan the QR code or paste the text code to import this pack</div>
+        <div id="exportQRCode" style="margin:0 auto 16px;width:160px;height:160px;background:white;border-radius:12px;padding:8px;box-sizing:border-box"></div>
+        <textarea id="exportCodeText" readonly style="width:100%;height:72px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;color:rgba(255,255,255,0.7);font-size:11px;font-family:monospace;padding:10px;resize:none;box-sizing:border-box;margin-bottom:12px"></textarea>
+        <button onclick="copyExportCode()" style="width:100%;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">📋 Copy Code</button>
+        <button onclick="closeExportModal()" style="width:100%;padding:12px;border-radius:14px;border:none;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);font-size:14px;font-weight:700;cursor:pointer">Done</button>
+    </div>
+</div>
+
+<!-- ════ IMPORT CODE MODAL ════ -->
+<div id="importOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:900;align-items:center;justify-content:center;padding:20px">
+    <div style="background:#1e1e2e;border-radius:24px;padding:28px 24px;width:100%;max-width:420px;text-align:center">
+        <div style="font-size:20px;font-weight:900;color:white;margin-bottom:6px">Import a Pack 📲</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:20px">Paste the export code shared by the pack creator</div>
+        <textarea id="importCodeInput" style="width:100%;height:100px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;color:white;font-size:11px;font-family:monospace;padding:10px;resize:none;box-sizing:border-box;margin-bottom:12px" placeholder="Paste code here…"></textarea>
+        <div id="importError" style="color:#ff6b6b;font-size:13px;font-weight:700;margin-bottom:10px;display:none">Invalid code — check you copied the full thing</div>
+        <button onclick="doImportPack()" style="width:100%;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,#43e97b,#38f9d7);color:#0a2015;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">Import Pack ✓</button>
+        <button onclick="closeImportModal()" style="width:100%;padding:12px;border-radius:14px;border:none;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);font-size:14px;font-weight:700;cursor:pointer">Cancel</button>
     </div>
 </div>
 
@@ -1411,6 +1763,12 @@
 
 <!-- ════ DRINK TOAST ════ -->
 <div class="drink-toast" id="drinkToast"></div>
+
+<!-- ════ TIMES UP OVERLAY ════ -->
+<div id="timesUpOverlay">
+    <div class="tuo-emoji">🍺</div>
+    <div class="tuo-title">Time's up! DRINK!</div>
+</div>
 
 <script>
 // ═══════════════════════════════════════════════════
@@ -1441,6 +1799,10 @@ const PILL_CONFIGS = {
         { cat: 'us',   label: '💑 Us',              heat: 0 },
         { cat: 'deep', label: '🌊 Deep & Meaningful', heat: 0 },
         { cat: 'spicy', label: '🌶️ Spicy',          heat: 0 },
+    ],
+    hotseat: [
+        { cat: 'pg13', label: '🟢 PG-13',  heat: 1 },
+        { cat: 'r18',  label: '🔞 R18+',   heat: 3 },
     ],
 };
 
@@ -1488,29 +1850,31 @@ const DRINK_TYPES = [
 ];
 
 const GRADIENTS = [
-    ['#FF6B6B','#FF8E53'],
-    ['#A855F7','#EC4899'],
-    ['#3B82F6','#06B6D4'],
-    ['#10B981','#3B82F6'],
-    ['#F59E0B','#EF4444'],
-    ['#8B5CF6','#EC4899'],
-    ['#EC4899','#F59E0B'],
-    ['#06B6D4','#10B981'],
-    ['#FF6B6B','#A855F7'],
-    ['#FFD93D','#FF6B6B'],
+    ['#FF416C','#FF4B2B'],
+    ['#8E2DE2','#4A00E0'],
+    ['#F7971E','#FFD200'],
+    ['#FC5C7D','#6A3093'],
+    ['#11998e','#38ef7d'],
+    ['#C94B4B','#4B134F'],
+    ['#00B4DB','#0083B0'],
+    ['#FF5F6D','#FFC371'],
+    ['#654EA3','#EAAFC8'],
+    ['#f953c6','#b91d73'],
 ];
 
 const CAT_META = {
     general:      { emoji: '🌍', label: 'General',          decos: ['🤔','💭','🌍','🤷','😄','💡','🙃'] },
-    spicy:        { emoji: '🌶️', label: 'Spicy',            decos: ['🌶️','🔥','😏','😈','💋','🫦','😳'] },
+    spicy:        { emoji: '🌶️', label: 'Spicy',            decos: ['🌶️','🔥','😏','😈','💋','👅','😳'] },
     deep:         { emoji: '🌊', label: 'Deep & Meaningful', decos: ['🌊','💙','🌙','✨','🪐','💫','🌌'] },
     ethical:      { emoji: '⚖️', label: 'Ethical',          decos: ['⚖️','🤝','💭','🌱','🕊️','🔮','🧭'] },
     controversial:{ emoji: '💣', label: 'Controversial',     decos: ['💣','⚡','🔪','💀','😤','🤯','💥'] },
     chaos:        { emoji: '😵', label: 'Chaos',             decos: ['😵','😈','🌪️','💀','🤭','😏','👀'] },
-    roast:        { emoji: '🔥', label: 'Group Roast',       decos: ['🔥','😬','💀','👀','😭','💅','🫵'] },
+    roast:        { emoji: '🔥', label: 'Group Roast',       decos: ['🔥','😬','💀','👀','😭','💅','👇'] },
     random:       { emoji: '🎲', label: 'Random Mix',        decos: ['🎲','🎯','🎪','🃏','🎠','🎨','🎭'] },
     custom:       { emoji: '📦', label: 'Custom',            decos: ['💭','✨','🎯','🤔','💡','😄','🌟'] },
     us:           { emoji: '💑', label: 'Us',                decos: ['💑','🏠','❤️','💍','🌍','👶','💰'] },
+    pg13:         { emoji: '🟢', label: 'PG-13',             decos: ['👀','😬','💀','👇','😤','😳','🙈'] },
+    r18:          { emoji: '🔞', label: 'R18+',              decos: ['🔞','🌶️','😈','💋','🔥','😏','👅'] },
 };
 
 // General mode: plain strings
@@ -1710,26 +2074,26 @@ const QUESTIONS = {
             "{player} — if {other} was about to make the worst decision of their life and you couldn't stop them with words, how far would you go?",
         ],
         roast: [
-            "who in this group would most likely cry at their own roast — and are they tearing up right now?",
-            "who in this group would least likely survive a week without their phone, and would they even try?",
-            "who in this group is most likely to have googled themselves in the last 48 hours?",
-            "who in this group would most likely get catfished — and would they ever admit it?",
-            "who in this group is most likely to be the villain in someone else's story right now without knowing it?",
-            "who in this group would most likely fake being sick to get out of plans they agreed to?",
-            "who in this group is most likely to have a folder on their phone they'd never show anyone?",
-            "who in this group would most likely send a risky text to the wrong person — and how bad would the damage be?",
-            "who in this group is most likely to pretend they've read a book they've never opened?",
-            "who in this group would most likely get kicked out of a country for something completely avoidable?",
-            "who in this group is most likely to have rehearsed a speech in the mirror at some point this week?",
-            "who in this group would most likely go on a reality TV show — and which one fits them embarrassingly well?",
-            "who in this group is most likely to have stalked an ex on social media in the last month — and did they accidentally like something?",
-            "who in this group would most likely throw someone under the bus to get out of trouble — and have they already done it to someone in this room?",
-            "who in this group is most likely to be absolutely insufferable when they're hungry, and does everyone already know to avoid them?",
-            "who in this group is most likely to have a completely unhinged opinion they've never said out loud — and what do you think it is?",
-            "who in this group would most likely survive the longest on a deserted island, and who would tap out on day one?",
-            "who in this group is most likely to send a voice note longer than three minutes — unprompted?",
-            "who in this group would most likely be the person everyone pretends to like at a party but talks about on the way home?",
-            "who in this group is most likely to have a secret talent so random it would make everyone uncomfortable?",
+            "{player}, who in this group would most likely cry at their own roast — and are they tearing up right now?",
+            "{player}, who in this group would least likely survive a week without their phone, and would they even try?",
+            "{player}, who in this group is most likely to have googled themselves in the last 48 hours?",
+            "{player}, who in this group would most likely get catfished — and would they ever admit it?",
+            "{player}, who in this group is most likely to be the villain in someone else's story right now without knowing it?",
+            "{player}, who in this group would most likely fake being sick to get out of plans they agreed to?",
+            "{player}, who in this group is most likely to have a folder on their phone they'd never show anyone?",
+            "{player}, who in this group would most likely send a risky text to the wrong person — and how bad would the damage be?",
+            "{player}, who in this group is most likely to pretend they've read a book they've never opened?",
+            "{player}, who in this group would most likely get kicked out of a country for something completely avoidable?",
+            "{player}, who in this group is most likely to have rehearsed a speech in the mirror at some point this week?",
+            "{player}, who in this group would most likely go on a reality TV show — and which one fits them embarrassingly well?",
+            "{player}, who in this group is most likely to have stalked an ex on social media in the last month — and did they accidentally like something?",
+            "{player}, who in this group would most likely throw someone under the bus to get out of trouble — and have they already done it to someone in this room?",
+            "{player}, who in this group is most likely to be absolutely insufferable when they're hungry, and does everyone already know to avoid them?",
+            "{player}, who in this group is most likely to have a completely unhinged opinion they've never said out loud — and what do you think it is?",
+            "{player}, who in this group would most likely survive the longest on a deserted island, and who would tap out on day one?",
+            "{player}, who in this group is most likely to send a voice note longer than three minutes — unprompted?",
+            "{player}, who in this group would most likely be the person everyone pretends to like at a party but talks about on the way home?",
+            "{player}, who in this group is most likely to have a secret talent so random it would make everyone uncomfortable?",
         ],
         chaos: [
             "{player} — who in this room do you find the least physically attractive? You have to answer.",
@@ -1802,6 +2166,52 @@ const QUESTIONS = {
             "{player}, is there something {other} does with their time or money that you'd want to talk about but haven't felt comfortable raising?",
         ],
     },
+    hotseat: {
+        pg13: [
+            "{player}, if you had to remove one person in this room from your life for a year, who would it be — and why?",
+            "{player}, what's something you've never said to this group but would admit right now if you had to?",
+            "{player}, who in this room do you trust the least — and has something specific happened to make you feel that way?",
+            "{player}, have you ever talked badly about someone in this room behind their back — and what did you say?",
+            "{player}, who in this room do you think is the most fake — big smiles in person, completely different when they leave?",
+            "{player}, if you could say one brutally honest thing to someone in this room right now, who's it for and what would you say?",
+            "{player}, who in this room has said or done something that genuinely hurt you but you never confronted them about?",
+            "{player}, if everyone here had to vote one person out of this friend group forever, who do you think it would be — and could it be you?",
+            "{player}, is there someone in this room you've been jealous of — and what do you actually envy about them?",
+            "{player}, who in this room do you think knows your biggest secret — and how do you actually feel about that?",
+            "{player}, have you ever lied to someone in this room about something important — what was it, roughly?",
+            "{player}, who in this room would you call at 3am in a real crisis — and who would be the last person you'd call?",
+            "{player}, who in this room do you think secretly judges you the most — and for what?",
+            "{player}, have you ever done something deliberately to impress someone in this room — and did it actually work?",
+            "{player}, if someone in this room confessed they had feelings for you right now, who would make things the most awkward?",
+            "{player}, what's the most dramatic thing that's happened in this group that you think about more than you let on?",
+            "{player}, who in this room are you most likely to lose touch with in five years — and do they already know it's probably them?",
+            "{player}, who in this room do you think is most likely to stab someone in the back if it benefited them enough?",
+            "{player}, if you had to confess the pettiest thing you've ever done to someone in this room, what would it be?",
+            "{player}, if the group right now had to name one thing they genuinely can't stand about you, what do you think they'd say?",
+        ],
+        r18: [
+            "{player}, have you ever had a sexual thought about someone in this room — yes or no, don't dodge it?",
+            "{player}, who in this room do you think is the best in bed — based purely on their energy and personality?",
+            "{player}, what's your actual body count — and is the number you're about to say the real one?",
+            "{player}, if you had to hook up with one person in this room right now, no consequences, who would it be?",
+            "{player}, what's the most embarrassing sexual thing you've done that this group doesn't know about?",
+            "{player}, have you ever been with more than one person at the same time — and did anyone ever find out?",
+            "{player}, who in this room do you think has the most chaotic or dramatic sex life behind closed doors?",
+            "{player}, what's the kinkiest thing you'd admit to doing — or genuinely wanting to do?",
+            "{player}, what's the riskiest place or situation you've done something sexual in — be as specific as you're willing to go?",
+            "{player}, have you ever had real feelings for someone in this room that crossed a line you weren't expecting?",
+            "{player}, if you rated your own performance in bed out of 10, what's the honest number you're giving yourself?",
+            "{player}, who in this room would you trust least around your partner — and be honest about why?",
+            "{player}, what's a sexual fantasy you've never admitted to anyone that you're going to admit right now?",
+            "{player}, have you ever faked it — in any sense of the word — with someone in this room?",
+            "{player}, who in this room would be the most unexpectedly wild if they fully let their guard down?",
+            "{player}, who in this room do you think is most likely hiding a secret relationship or situationship nobody knows about?",
+            "{player}, if you had to describe the most reckless sexual decision you've ever made in one sentence, what is it?",
+            "{player}, have you ever been genuinely attracted to someone you absolutely should not have been — who was it and why were they off-limits?",
+            "{player}, if zero consequences existed for one night — no feelings, no one finds out — what would you do and with whom in this room?",
+            "{player}, what's something about your sex life right now that would genuinely shock this group if they knew?",
+        ],
+    },
 };
 
 // ═══════════════════════════════════════════════════
@@ -1819,6 +2229,10 @@ let state = {
     drinkingGame: false,
     drinkScreens: new Set(),
     currentDrinkAmount: 0,
+    // hot seat
+    hsTimerEnabled: false,
+    hsTimerSecs: 15,
+    hsDrinks: false,
 };
 
 // ═══════════════════════════════════════════════════
@@ -1851,6 +2265,17 @@ function showScreen(id) {
 
 function selectMode(mode) {
     state.mode = mode;
+    if (mode === 'hotseat') {
+        renderHotSeatPills();
+        document.getElementById('hsToggleDrinks').checked = false;
+        document.getElementById('hsToggleTimer').checked  = false;
+        document.getElementById('timeBtnGroup').style.display = 'none';
+        document.getElementById('hsPlayerInput').value = '';
+        document.getElementById('hsOtherInputs').innerHTML =
+            `<div class="player-row"><input class="player-input" type="text" placeholder="Other player name…" maxlength="18"><button class="remove-btn" onclick="removePlayer(this)">✕</button></div>`;
+        showScreen('hotSeatSetupScreen');
+        return;
+    }
     const titles = { party: 'Party Mode', general: 'Discussion Mode', couples: 'Couples Mode' };
     const subs   = { party: 'Add your squad below', general: 'Pick your vibe', couples: 'Just the two of you' };
     document.getElementById('setupTitle').textContent = titles[mode] || mode;
@@ -1864,7 +2289,71 @@ function selectMode(mode) {
     showScreen('setupScreen');
 }
 
+function renderHotSeatPills() {
+    const container = document.getElementById('hotSeatPills');
+    const configs = PILL_CONFIGS.hotseat;
+    container.innerHTML = configs.map(({ cat, label, heat }, i) =>
+        `<button class="cat-pill${i === 0 ? ' active' : ''}" data-cat="${cat}" onclick="selectHotSeatCat(this)">${label}${heat ? `<span class="pill-rec">${'🔥'.repeat(heat)}</span>` : ''}</button>`
+    ).join('');
+    state.category = configs[0].cat;
+}
+
+function selectHotSeatCat(btn) {
+    document.querySelectorAll('#hotSeatPills .cat-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    state.category = btn.dataset.cat;
+}
+
+function hsAddPlayer() {
+    const container = document.getElementById('hsOtherInputs');
+    if (container.children.length >= 10) return;
+    const row = document.createElement('div');
+    row.className = 'player-row';
+    row.innerHTML = `<input class="player-input" type="text" placeholder="Other player name…" maxlength="18"><button class="remove-btn" onclick="removePlayer(this)">✕</button>`;
+    container.appendChild(row);
+}
+
+function toggleTimerButtons() {
+    const on = document.getElementById('hsToggleTimer').checked;
+    document.getElementById('timeBtnGroup').style.display = on ? 'flex' : 'none';
+}
+
+function selectTimeLimit(btn) {
+    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+function startHotSeat() {
+    const hsName = document.getElementById('hsPlayerInput').value.trim();
+    if (!hsName) {
+        const err = document.getElementById('hsErrorMsg');
+        err.classList.add('show');
+        setTimeout(() => err.classList.remove('show'), 2500);
+        return;
+    }
+    const others = [...document.querySelectorAll('#hsOtherInputs .player-input')]
+        .map(i => i.value.trim()).filter(Boolean);
+    state.players = [hsName, ...others];
+    state.hsDrinks = document.getElementById('hsToggleDrinks').checked;
+    state.hsTimerEnabled = document.getElementById('hsToggleTimer').checked;
+    const activeTimeBtn = document.querySelector('.time-btn.active');
+    state.hsTimerSecs = activeTimeBtn ? parseInt(activeTimeBtn.dataset.secs) : 15;
+    state.punishDrinks = false;
+    state.punishDares  = false;
+    state.drinkingGame = false;
+    state.drinkScreens = new Set();
+    state.questions = buildQuestions();
+    state.index = 0;
+    startGameAudio();
+    runTransition(() => {
+        showScreen('gameScreen');
+        document.getElementById('dodgeBtn').style.display = state.hsDrinks ? '' : 'none';
+        renderQuestion();
+    });
+}
+
 function goHome() {
+    stopHotSeatTimer();
     resetPlayerInputs();
     showScreen('homeScreen');
 }
@@ -1945,10 +2434,11 @@ function buildQuestions() {
     }
     // Custom packs play through exactly the questions entered, no limit
     if (state.category.startsWith('custom:')) return shuffle(qs);
-    // Always return exactly 20 — cycle through the pool if it's smaller
-    let pool20 = shuffle(qs);
-    while (pool20.length < 20) pool20 = [...pool20, ...shuffle(qs)];
-    return pool20.slice(0, 20);
+    // Hot seat: exactly 8 questions
+    const limit = state.mode === 'hotseat' ? 8 : 20;
+    let poolN = shuffle(qs);
+    while (poolN.length < limit) poolN = [...poolN, ...shuffle(qs)];
+    return poolN.slice(0, limit);
 }
 
 function startGame() {
@@ -1983,10 +2473,17 @@ function startGame() {
     }
     state.index = 0;
     startGameAudio();
-    runTransition(() => {
+    const launchGame = () => {
         showScreen('gameScreen');
+        document.getElementById('dodgeBtn').style.display = 'none';
+        document.getElementById('skipBtn').style.display  = '';
         renderQuestion();
-    });
+    };
+    if (state.mode === 'party') {
+        runPartyTransition(launchGame);
+    } else {
+        runTransition(launchGame);
+    }
 }
 
 function generateDrinkScreens(total) {
@@ -2019,7 +2516,8 @@ function resolveTemplate(q) {
     const isNomination = !q.text.includes('{other');
 
     const players = state.players;
-    const targetIdx = Math.floor(Math.random() * players.length);
+    // Hot seat: target is always index 0 (the hot seat player)
+    const targetIdx = state.mode === 'hotseat' ? 0 : Math.floor(Math.random() * players.length);
     const target = players[targetIdx];
     const others = shuffle(players.filter((_, i) => i !== targetIdx));
 
@@ -2054,19 +2552,43 @@ function renderQuestion() {
     const meta = CAT_META[q.cat];
     const total = state.questions.length;
 
-    // Card gradient
+    // Card gradient + glow
     const card = document.getElementById('qCard');
     const [c1, c2] = GRADIENTS[state.index % GRADIENTS.length];
     card.style.background = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
+    card.style.boxShadow = `0 24px 64px ${c1}66, 0 8px 24px rgba(0,0,0,0.35)`;
 
-    // Badge
-    document.getElementById('catBadge').textContent = `${meta.emoji} ${meta.label}`;
+    // Badge vs title
+    const useBigTitle = state.mode === 'general' && state.category === 'spicy';
+    const titleEl = document.getElementById('qCatTitle');
+    const badgeEl = document.getElementById('catBadge');
+    titleEl.textContent = `${meta.emoji} ${meta.label}`;
+    titleEl.classList.toggle('show', useBigTitle);
+    badgeEl.style.display = useBigTitle ? 'none' : '';
+    badgeEl.textContent = `${meta.emoji} ${meta.label}`;
 
     // Question text with highlights
     document.getElementById('qText').innerHTML = buildCardHtml(resolved);
 
-    // Decoration emoji
-    document.getElementById('qDeco').textContent = pick(meta.decos);
+    // Floating deco emojis
+    const decoLayer = document.getElementById('qDecoLayer');
+    decoLayer.innerHTML = '';
+    const defs = [
+        { size: 172, right: '-14px', bottom:  '78px', opacity: 0.18 },
+        { size: 68,  right:  '18px', top:     '42%',  opacity: 0.13 },
+        { size: 44,  left:   '16px', top:     '56%',  opacity: 0.12 },
+    ];
+    defs.forEach(({ size, right, left, bottom, opacity }) => {
+        const el = document.createElement('span');
+        el.className = 'q-deco-float';
+        el.textContent = pick(meta.decos);
+        const rot = Math.round(Math.random() * 50) - 25;
+        let pos = `bottom:${bottom};`;
+        if (right !== undefined) pos += `right:${right};`;
+        if (left  !== undefined) pos += `left:${left};`;
+        el.style.cssText = `font-size:${size}px;opacity:${opacity};transform:rotate(${rot}deg);${pos}`;
+        decoLayer.appendChild(el);
+    });
 
     // Progress
     const pct = ((state.index + 1) / total * 100).toFixed(1);
@@ -2091,9 +2613,17 @@ function renderQuestion() {
     }
 
     state.currentDrinkAmount = resolved.drinkAmount;
+
+    // Hot seat timer
+    if (state.mode === 'hotseat' && state.hsTimerEnabled) {
+        startHotSeatTimer();
+    } else {
+        stopHotSeatTimer();
+    }
 }
 
 function advance() {
+    stopHotSeatTimer();
     const card = document.getElementById('qCard');
     card.classList.add('out');
     setTimeout(() => {
@@ -2114,6 +2644,119 @@ function advance() {
         card.classList.add('in');
         requestAnimationFrame(() => requestAnimationFrame(() => card.classList.remove('in')));
     }, 220);
+}
+
+// ═══════════════════════════════════════════════════
+//  TONIGHT'S LINEUP
+// ═══════════════════════════════════════════════════
+let _lineupCallback = null;
+let _lineupTimers   = [];
+
+function showLineup(players, callback) {
+    _lineupCallback = callback;
+    _lineupTimers.forEach(clearTimeout);
+    _lineupTimers = [];
+
+    const overlay  = document.getElementById('lineupOverlay');
+    const namesEl  = document.getElementById('luNames');
+    const gameOnEl = document.getElementById('luGameOn');
+    const skipEl   = document.getElementById('luSkip');
+
+    namesEl.innerHTML = '';
+    gameOnEl.classList.remove('show');
+    skipEl.classList.remove('show');
+    overlay.classList.add('show');
+
+    players.forEach((name, i) => {
+        const el = document.createElement('div');
+        el.className = 'lu-name';
+        el.textContent = name;
+        namesEl.appendChild(el);
+        _lineupTimers.push(setTimeout(() => el.classList.add('show'), 350 + i * 380));
+    });
+
+    const afterNames = 350 + players.length * 380;
+    _lineupTimers.push(setTimeout(() => skipEl.classList.add('show'), 600));
+    _lineupTimers.push(setTimeout(() => gameOnEl.classList.add('show'), afterNames + 200));
+    _lineupTimers.push(setTimeout(() => _closeLineup(), afterNames + 1600));
+}
+
+function _closeLineup() {
+    _lineupTimers.forEach(clearTimeout);
+    _lineupTimers = [];
+    const overlay = document.getElementById('lineupOverlay');
+    overlay.style.transition = 'opacity 0.35s ease';
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+        overlay.classList.remove('show');
+        overlay.style.opacity = '';
+        overlay.style.transition = '';
+        if (_lineupCallback) { _lineupCallback(); _lineupCallback = null; }
+    }, 350);
+}
+
+function _skipLineup() {
+    _closeLineup();
+}
+
+// ═══════════════════════════════════════════════════
+//  HOT SEAT — TIMER
+// ═══════════════════════════════════════════════════
+let _hsTimerInterval = null;
+let _hsTimerStart    = null;
+
+function startHotSeatTimer() {
+    stopHotSeatTimer();
+    const bar  = document.getElementById('timerBar');
+    const fill = document.getElementById('timerFill');
+    bar.classList.add('active');
+    fill.classList.remove('danger');
+    fill.style.width = '100%';
+    _hsTimerStart = Date.now();
+    const duration = state.hsTimerSecs * 1000;
+    _hsTimerInterval = setInterval(() => {
+        const elapsed = Date.now() - _hsTimerStart;
+        const pct = Math.max(0, 100 - (elapsed / duration * 100));
+        fill.style.width = pct + '%';
+        if (pct < 20) fill.classList.add('danger');
+        if (elapsed >= duration) {
+            stopHotSeatTimer();
+            onTimerExpiry();
+        }
+    }, 80);
+}
+
+function stopHotSeatTimer() {
+    if (_hsTimerInterval) { clearInterval(_hsTimerInterval); _hsTimerInterval = null; }
+    const bar = document.getElementById('timerBar');
+    if (bar) bar.classList.remove('active');
+}
+
+function onTimerExpiry() {
+    speakDrink();
+    const overlay = document.getElementById('timesUpOverlay');
+    overlay.classList.add('show');
+    setTimeout(() => {
+        overlay.classList.remove('show');
+        advance();
+    }, 2000);
+}
+
+function speakDrink() {
+    try {
+        if (!window.speechSynthesis) return;
+        const utt = new SpeechSynthesisUtterance('DRINK!');
+        utt.rate = 1.1; utt.pitch = 1.2; utt.volume = 1;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utt);
+    } catch(e) {}
+}
+
+function hotSeatDodged() {
+    speakDrink();
+    stopHotSeatTimer();
+    showDrinkToast('Dodged! 🍺 4 drinks!');
+    setTimeout(() => advance(), 1400);
 }
 
 // ═══════════════════════════════════════════════════
@@ -2318,6 +2961,8 @@ const TS_CONFIG = {
     deep:          { label: '🌊 Deep & Meaningful', anim: 'anim-from-right'  },
     random:        { label: '🎲 Random Mix',         anim: 'anim-spin-in'     },
     us:            { label: '💑 Us',                 anim: 'anim-fade-scale'  },
+    pg13:          { label: '🟢 PG-13',              anim: 'anim-from-bottom' },
+    r18:           { label: '🔞 R18+',               anim: 'anim-glitch'      },
 };
 
 const _whistleAudio = new Audio('music/whistle.mp3');
@@ -2327,6 +2972,58 @@ function playWhistle() {
         _whistleAudio.currentTime = 0;
         _whistleAudio.play().catch(() => {});
     } catch(e) {}
+}
+
+function runPartyTransition(callback) {
+    const cat     = state.category;
+    const isCustom = cat.startsWith('custom:');
+    const tsClass  = isCustom ? 'custom' : cat;
+    let cfg = TS_CONFIG[cat] || TS_CONFIG.general;
+    if (isCustom) {
+        const pack = getCustomPacks().find(p => p.id === cat.slice(7));
+        cfg = { label: '📦 ' + (pack ? pack.name : 'Custom Pack'), anim: 'anim-fade-scale' };
+    }
+
+    const ts       = document.getElementById('transitionScreen');
+    const lbl      = document.getElementById('tsCatLabel');
+    const namesEl  = document.getElementById('tsLineupNames');
+    const gameOnEl = document.getElementById('tsGameOn');
+
+    ts.className = '';
+    lbl.className = '';
+    lbl.textContent = cfg.label;
+    namesEl.innerHTML = '';
+    gameOnEl.classList.remove('show');
+
+    ts.classList.add('ts-visible', `ts-${tsClass}`, 'ts-party-mode');
+
+    // Category label animates in
+    setTimeout(() => lbl.classList.add(cfg.anim), 180);
+
+    // Player names fade in one by one
+    state.players.forEach((name, i) => {
+        const el = document.createElement('div');
+        el.className = 'ts-lineup-name';
+        el.textContent = name;
+        namesEl.appendChild(el);
+        setTimeout(() => el.classList.add('show'), 700 + i * 520);
+    });
+
+    const afterNames = 700 + state.players.length * 520 + 500;
+
+    // Game On + whistle
+    setTimeout(() => {
+        gameOnEl.classList.add('show');
+        playWhistle();
+    }, afterNames);
+
+    // Fade out and launch game
+    setTimeout(() => {
+        callback();
+        ts.classList.add('ts-out');
+    }, afterNames + 2200);
+
+    setTimeout(() => { ts.className = ''; }, afterNames + 2500);
 }
 
 function runTransition(callback) {
@@ -2416,7 +3113,8 @@ function renderSavedPacks() {
                     <div class="saved-pack-name">${p.name}</div>
                     <div class="saved-pack-count">${p.questions.length} question${p.questions.length !== 1 ? 's' : ''} · ${p.couples ? 'Couples Mode' : 'Party &amp; Discussion'}</div>
                 </div>
-                <button class="saved-pack-del" onclick="deleteCustomPack('${p.id}', '${p.name.replace(/'/g, "\\'")}')">🗑 Delete</button>
+                <button class="saved-pack-share" onclick="showExportModal('${p.id}')">📤 Share</button>
+                <button class="saved-pack-del" onclick="deleteCustomPack('${p.id}', '${p.name.replace(/'/g, "\\'")}')">🗑</button>
             </div>`
         ).join('') +
         '<div style="height:20px"></div>';
@@ -2492,6 +3190,14 @@ function _tryCreatePeer(code) {
     peer.on('open', () => {
         _cpPeer = peer; _cpCode = code;
         document.getElementById('cpCode').textContent = code;
+        // QR code for the room code
+        const qrEl = document.getElementById('cpQRCode');
+        qrEl.innerHTML = '';
+        if (typeof QRCode !== 'undefined') {
+            new QRCode(qrEl, { text: code, width: 120, height: 120, colorDark: '#000000', colorLight: '#ffffff' });
+            qrEl.style.display = 'block';
+            document.getElementById('cpQRLabel').style.display = 'block';
+        }
         document.getElementById('cpMembers').innerHTML =
             '<div class="cp-member-row"><span class="cp-member-name">You (creator)</span><span class="cp-member-badge">HOST</span></div>';
         document.getElementById('cpJoinRequests').style.display = 'none';
@@ -2620,6 +3326,74 @@ function finalisePack() {
 function abortCreate() {
     if (_cpPeer) { _cpPeer.destroy(); _cpPeer = null; }
     showScreen('customPackScreen');
+}
+
+// ─── Pack export / import ───
+
+function _encodePackForExport(pack) {
+    const payload = { n: pack.name, q: pack.questions, c: !!pack.couples };
+    return btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+}
+
+function _decodePackFromExport(code) {
+    const payload = JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+    if (!payload.n || !Array.isArray(payload.q)) throw new Error('bad payload');
+    return { id: generateRoomCode(), name: payload.n, questions: payload.q, couples: !!payload.c };
+}
+
+function showExportModal(packId) {
+    const pack = getCustomPacks().find(p => p.id === packId);
+    if (!pack) return;
+    const code = _encodePackForExport(pack);
+    document.getElementById('exportModalTitle').textContent = '📤 Share "' + pack.name + '"';
+    document.getElementById('exportCodeText').value = code;
+    const qrEl = document.getElementById('exportQRCode');
+    qrEl.innerHTML = '';
+    if (typeof QRCode !== 'undefined') {
+        new QRCode(qrEl, { text: code, width: 144, height: 144, colorDark: '#000000', colorLight: '#ffffff' });
+    }
+    const ov = document.getElementById('exportOverlay');
+    ov.style.display = 'flex';
+}
+
+function closeExportModal() {
+    document.getElementById('exportOverlay').style.display = 'none';
+}
+
+function copyExportCode() {
+    const code = document.getElementById('exportCodeText').value;
+    navigator.clipboard.writeText(code).then(() => {
+        const btn = event.target;
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => { btn.textContent = '📋 Copy Code'; }, 2000);
+    }).catch(() => {
+        document.getElementById('exportCodeText').select();
+    });
+}
+
+function showImportModal() {
+    document.getElementById('importCodeInput').value = '';
+    document.getElementById('importError').style.display = 'none';
+    document.getElementById('importOverlay').style.display = 'flex';
+}
+
+function closeImportModal() {
+    document.getElementById('importOverlay').style.display = 'none';
+}
+
+function doImportPack() {
+    const code = document.getElementById('importCodeInput').value.trim();
+    const errEl = document.getElementById('importError');
+    errEl.style.display = 'none';
+    try {
+        const pack = _decodePackFromExport(code);
+        saveCustomPack(pack);
+        closeImportModal();
+        renderSavedPacks();
+        openCustomPack();
+    } catch(e) {
+        errEl.style.display = 'block';
+    }
 }
 
 // ═══════════════════════════════════════════════════
@@ -2774,7 +3548,7 @@ function _wrapText(ctx, text, x, y, maxWidth, lineHeight) {
     return lineY;
 }
 
-function createShareCard() {
+function createShareCard(format = 'square') {
     const quoteText = document.getElementById('quoteText').value.trim();
     if (!quoteText) {
         const ta = document.getElementById('quoteText');
@@ -2786,7 +3560,8 @@ function createShareCard() {
     const quoteName = document.getElementById('quoteName').value.trim();
 
     document.fonts.ready.then(() => {
-        const W = 1080, H = 1080;
+        const W = 1080;
+        const H = format === 'stories' ? 1920 : 1080;
         const canvas = document.createElement('canvas');
         canvas.width = W; canvas.height = H;
         const ctx = canvas.getContext('2d');
@@ -2800,6 +3575,8 @@ function createShareCard() {
             ethical:       ['#005c97','#363795'],
             deep:          ['#0f2027','#203a43','#2c5364'],
             random:        ['#f093fb','#8b5cf6','#3b82f6'],
+            roast:         ['#7f0000','#ee0979','#ff6a00'],
+            us:            ['#6a0572','#f953c6','#fc466b'],
         };
         const colors = gradMap[state.category] || gradMap.general;
         const bg = ctx.createLinearGradient(0, 0, W, H);
@@ -2823,71 +3600,137 @@ function createShareCard() {
 
         ctx.textAlign = 'center';
 
-        // Brand
-        ctx.font = '700 28px "Nunito", system-ui, sans-serif';
-        ctx.fillStyle = 'rgba(255,255,255,0.42)';
-        ctx.fillText('HYPOTHETICALLY SPEAKING', W / 2, 88);
-
-        // Category
         const catLabels = {
             general:'🌍 General', spicy:'🌶️ Spicy', chaos:'😵 Chaos',
             controversial:'💣 Controversial', ethical:'⚖️ Ethical',
             deep:'🌊 Deep & Meaningful', random:'🎲 Random Mix',
+            roast:'🔥 Group Roast', us:'💑 Us',
         };
-        ctx.font = '800 58px "Nunito", system-ui, sans-serif';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(catLabels[state.category] || '🌍 General', W / 2, 168);
 
-        // Divider
-        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.moveTo(120, 204); ctx.lineTo(960, 204); ctx.stroke();
+        if (format === 'stories') {
+            // ── Stories layout (1080 × 1920) ──
+            // Brand top
+            ctx.font = '800 38px “Nunito”, system-ui, sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.9)';
+            ctx.fillText('hypothetically...', W / 2, 180);
 
-        // Opening quote mark
-        ctx.font = '220px Georgia, serif';
-        ctx.fillStyle = 'rgba(255,255,255,0.08)';
-        ctx.textAlign = 'left';
-        ctx.fillText('“', 48, 490);
-        ctx.textAlign = 'center';
+            // Category
+            ctx.font = '800 54px “Nunito”, system-ui, sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.55)';
+            ctx.fillText(catLabels[state.category] || '🌍 General', W / 2, 260);
 
-        // Quote body
-        ctx.font = '600 52px "Nunito", system-ui, sans-serif';
-        ctx.fillStyle = '#ffffff';
-        const endY = _wrapText(ctx, quoteText, W / 2, 390, 820, 74);
+            // Top divider
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(120, 300); ctx.lineTo(960, 300); ctx.stroke();
 
-        // Closing quote mark
-        ctx.font = '220px Georgia, serif';
-        ctx.fillStyle = 'rgba(255,255,255,0.08)';
-        ctx.textAlign = 'right';
-        ctx.fillText('”', W - 48, Math.min(endY + 150, 870));
-        ctx.textAlign = 'center';
+            // Opening quote mark
+            ctx.font = '260px Georgia, serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.07)';
+            ctx.textAlign = 'left';
+            ctx.fillText('”', 48, 820);
+            ctx.textAlign = 'center';
 
-        // Attribution
-        if (quoteName) {
-            ctx.font = '600 italic 36px "Nunito", system-ui, sans-serif';
+            // Quote body — centered in the tall space
+            ctx.font = '700 58px “Nunito”, system-ui, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            const endY = _wrapText(ctx, quoteText, W / 2, 620, 840, 82);
+
+            // Closing quote mark
+            ctx.font = '260px Georgia, serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.07)';
+            ctx.textAlign = 'right';
+            ctx.fillText('”', W - 48, Math.min(endY + 180, 1380));
+            ctx.textAlign = 'center';
+
+            // Attribution
+            if (quoteName) {
+                ctx.font = '600 italic 42px “Nunito”, system-ui, sans-serif';
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                ctx.fillText('— ' + quoteName, W / 2, Math.min(endY + 120, 1430));
+            }
+
+            // Bottom divider
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(120, 1660); ctx.lineTo(960, 1660); ctx.stroke();
+
+            // Player names
+            if (state.players.length > 0) {
+                ctx.font = '600 30px “Nunito”, system-ui, sans-serif';
+                ctx.fillStyle = 'rgba(255,255,255,0.48)';
+                ctx.fillText(state.players.join('  ·  '), W / 2, 1720);
+            }
+
+            // Tagline
+            ctx.font = 'italic 26px “Nunito”, system-ui, sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.28)';
+            ctx.fillText('Where honesty gets uncomfortable', W / 2, 1800);
+
+            // App name bottom
+            ctx.font = '700 30px “Nunito”, system-ui, sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.55)';
+            ctx.fillText('hypothetically...', W / 2, 1870);
+
+        } else {
+            // ── Square layout (1080 × 1080) ──
+            // Brand
+            ctx.font = '800 30px “Nunito”, system-ui, sans-serif';
             ctx.fillStyle = 'rgba(255,255,255,0.6)';
-            ctx.fillText('— ' + quoteName, W / 2, Math.min(endY + 96, 910));
+            ctx.fillText('hypothetically...', W / 2, 88);
+
+            // Category
+            ctx.font = '800 58px “Nunito”, system-ui, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(catLabels[state.category] || '🌍 General', W / 2, 168);
+
+            // Divider
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(120, 204); ctx.lineTo(960, 204); ctx.stroke();
+
+            // Opening quote mark
+            ctx.font = '220px Georgia, serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.08)';
+            ctx.textAlign = 'left';
+            ctx.fillText('”', 48, 490);
+            ctx.textAlign = 'center';
+
+            // Quote body
+            ctx.font = '600 52px “Nunito”, system-ui, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            const endY = _wrapText(ctx, quoteText, W / 2, 390, 820, 74);
+
+            // Closing quote mark
+            ctx.font = '220px Georgia, serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.08)';
+            ctx.textAlign = 'right';
+            ctx.fillText('”', W - 48, Math.min(endY + 150, 870));
+            ctx.textAlign = 'center';
+
+            // Attribution
+            if (quoteName) {
+                ctx.font = '600 italic 36px “Nunito”, system-ui, sans-serif';
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                ctx.fillText('— ' + quoteName, W / 2, Math.min(endY + 96, 910));
+            }
+
+            // Bottom divider
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(120, 944); ctx.lineTo(960, 944); ctx.stroke();
+
+            // Player names
+            if (state.players.length > 0) {
+                ctx.font = '600 26px “Nunito”, system-ui, sans-serif';
+                ctx.fillStyle = 'rgba(255,255,255,0.48)';
+                ctx.fillText(state.players.join('  ·  '), W / 2, 990);
+            }
+
+            // Tagline
+            ctx.font = 'italic 22px “Nunito”, system-ui, sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.28)';
+            ctx.fillText('Where honesty gets uncomfortable', W / 2, 1046);
         }
-
-        // Bottom divider
-        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(120, 944); ctx.lineTo(960, 944); ctx.stroke();
-
-        // Player names
-        if (state.players.length > 0) {
-            ctx.font = '600 26px "Nunito", system-ui, sans-serif';
-            ctx.fillStyle = 'rgba(255,255,255,0.48)';
-            ctx.fillText(state.players.join('  ·  '), W / 2, 990);
-        }
-
-        // Tagline
-        ctx.font = 'italic 22px "Nunito", system-ui, sans-serif';
-        ctx.fillStyle = 'rgba(255,255,255,0.26)';
-        ctx.fillText('Where honesty gets uncomfortable', W / 2, 1048);
 
         canvas.toBlob(blob => {
-            window._shareFile   = new File([blob], 'hypothetically-speaking.png', { type: 'image/png' });
+            window._shareFile   = new File([blob], 'hypothetically.png', { type: 'image/png' });
             window._shareCanvas = canvas;
             _showShareOverlay(canvas);
         }, 'image/png');
