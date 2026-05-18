@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Hypothetically Speaking...</title>
+    <title>Hypothetically...</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900;1,800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
@@ -121,6 +122,7 @@
         .mode-card:active { transform: scale(0.97); }
         .mode-card-general { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         .mode-card-party   { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .mode-card-couples { background: linear-gradient(135deg, #ff8a80 0%, #ff5252 100%); }
         .mode-card::after {
             content: '→';
             position: absolute; right: 24px; top: 50%;
@@ -170,6 +172,8 @@
         .cat-pill[data-cat="controversial"].active{ background: linear-gradient(135deg, #FF416C, #FF4B2B); }
         .cat-pill[data-cat="chaos"].active        { background: linear-gradient(135deg, #f953c6, #b91d73); }
         .cat-pill[data-cat="random"].active       { background: linear-gradient(135deg, #fa709a, #fee140); }
+        .cat-pill[data-cat="roast"].active        { background: linear-gradient(135deg, #ff6a00, #ee0979); }
+        .cat-pill[data-cat="us"].active           { background: linear-gradient(135deg, #f953c6, #fc466b); }
 
         /* Player inputs */
         .players-section { width: 100%; margin-bottom: 28px; }
@@ -349,10 +353,134 @@
 
         .end-emoji   { font-size: 78px; text-align: center; margin-bottom: 18px; }
         .end-title   { font-size: 34px; font-weight: 900; color: white; text-align: center; margin-bottom: 10px; }
-        .end-sub     { font-size: 15px; color: rgba(255,255,255,0.45); font-weight: 700; text-align: center; margin-bottom: 52px; line-height: 1.5; }
+        .end-sub     { font-size: 15px; color: rgba(255,255,255,0.45); font-weight: 700; text-align: center; margin-bottom: 32px; line-height: 1.5; }
 
         .end-actions { display: flex; flex-direction: column; gap: 12px; width: 100%; }
 
+        /* ── Quote section ── */
+        .quote-section {
+            width: 100%; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;
+        }
+        .quote-prompt {
+            font-size: 13px; font-weight: 800; letter-spacing: 1.5px;
+            text-transform: uppercase; color: rgba(255,255,255,0.45);
+            text-align: center; margin-bottom: 4px;
+        }
+        .quote-textarea {
+            width: 100%; min-height: 100px;
+            padding: 16px; border-radius: 18px;
+            background: rgba(255,255,255,0.09);
+            border: 2px solid rgba(255,255,255,0.14);
+            color: #fff; font-family: 'Nunito', sans-serif;
+            font-size: 16px; font-weight: 600; line-height: 1.5;
+            resize: none; outline: none;
+            transition: border-color 0.2s;
+        }
+        .quote-textarea::placeholder { color: rgba(255,255,255,0.28); }
+        .quote-textarea:focus { border-color: rgba(255,255,255,0.4); }
+        .quote-name-input {
+            width: 100%; padding: 13px 16px; border-radius: 14px;
+            background: rgba(255,255,255,0.07);
+            border: 2px solid rgba(255,255,255,0.1);
+            color: #fff; font-family: 'Nunito', sans-serif;
+            font-size: 15px; font-weight: 600; font-style: italic;
+            outline: none; transition: border-color 0.2s;
+        }
+        .quote-name-input::placeholder { color: rgba(255,255,255,0.28); }
+        .quote-name-input:focus { border-color: rgba(255,255,255,0.3); }
+        .create-card-btn {
+            width: 100%; padding: 17px; border-radius: 20px;
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            border: none; color: #1a0a00;
+            font-family: 'Nunito', sans-serif;
+            font-size: 16px; font-weight: 900;
+            cursor: pointer; transition: transform 0.15s;
+            box-shadow: 0 4px 20px rgba(247,151,30,0.35);
+        }
+        .create-card-btn:active { transform: scale(0.97); }
+        .skip-quote-btn {
+            width: 100%; padding: 12px; border-radius: 14px;
+            background: transparent; border: none;
+            color: rgba(255,255,255,0.35);
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px; font-weight: 800;
+            cursor: pointer; transition: color 0.15s;
+        }
+        .skip-quote-btn:hover { color: rgba(255,255,255,0.55); }
+
+        /* ── Share overlay ── */
+        #shareOverlay {
+            position: fixed; inset: 0; z-index: 200;
+            background: rgba(10,4,22,0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px 20px;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.25s;
+        }
+        #shareOverlay.show { opacity: 1; pointer-events: all; }
+        .share-modal {
+            width: 100%; max-width: 420px;
+            display: flex; flex-direction: column; align-items: center; gap: 16px;
+        }
+        .share-preview-img {
+            width: 220px; height: 220px;
+            border-radius: 20px;
+            object-fit: cover;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.55);
+        }
+        .share-modal-title {
+            font-size: 20px; font-weight: 900; color: white; text-align: center;
+        }
+        .share-modal-sub {
+            font-size: 13px; color: rgba(255,255,255,0.45); font-weight: 700; text-align: center; margin-top: -6px;
+        }
+        .share-opts {
+            display: flex; gap: 12px; width: 100%;
+        }
+        .share-opt-btn {
+            flex: 1; padding: 15px 10px; border-radius: 16px;
+            border: none; cursor: pointer;
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px; font-weight: 900;
+            transition: transform 0.15s;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+        }
+        .share-opt-btn:active { transform: scale(0.96); }
+        .share-opt-btn .so-icon { font-size: 26px; }
+        .share-opt-native   { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .share-opt-download { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); border: 2px solid rgba(255,255,255,0.15); }
+        .share-add-btn {
+            width: 100%; padding: 15px; border-radius: 16px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.18);
+            color: rgba(255,255,255,0.8);
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px; font-weight: 800;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .share-add-btn:hover { background: rgba(255,255,255,0.16); color: white; }
+        .share-done-btn {
+            width: 100%; padding: 13px; border-radius: 16px;
+            background: transparent; border: none;
+            color: rgba(255,255,255,0.35);
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px; font-weight: 800;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .share-done-btn:hover { color: rgba(255,255,255,0.6); }
+
+        .share-btn {
+            width: 100%; padding: 18px; border-radius: 20px;
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            border: none; color: #1a1a1a;
+            font-family: 'Nunito', sans-serif;
+            font-size: 17px; font-weight: 900;
+            cursor: pointer; transition: transform 0.15s;
+            box-shadow: 0 4px 20px rgba(247,151,30,0.4);
+        }
+        .share-btn:active { transform: scale(0.97); }
         .play-again-btn {
             width: 100%; padding: 18px; border-radius: 20px;
             background: linear-gradient(135deg, #667eea, #764ba2);
@@ -372,6 +500,203 @@
             cursor: pointer; transition: all 0.15s;
         }
         .home-btn:active { background: rgba(255,255,255,0.14); }
+
+        /* ════════════════════════════════
+           CUSTOM PACK — home CTA
+        ════════════════════════════════ */
+        .custom-pack-cta {
+            display: flex; align-items: center; gap: 14px;
+            width: 100%; margin-top: 20px; padding: 18px 20px;
+            border-radius: 20px;
+            border: 2px dashed rgba(255,255,255,0.22);
+            background: rgba(255,255,255,0.04);
+            cursor: pointer; transition: all 0.2s;
+            text-align: left;
+        }
+        .custom-pack-cta:active { background: rgba(255,255,255,0.09); }
+        .cta-icon  { font-size: 26px; flex-shrink: 0; }
+        .cta-body  { flex: 1; }
+        .cta-title { font-size: 15px; font-weight: 800; color: rgba(255,255,255,0.8); }
+        .cta-desc  { font-size: 12px; color: rgba(255,255,255,0.38); font-weight: 700; margin-top: 2px; }
+        .cta-arrow { font-size: 16px; color: rgba(255,255,255,0.28); flex-shrink: 0; }
+
+        /* ════════════════════════════════
+           CUSTOM PACK — screens
+        ════════════════════════════════ */
+        /* Choice cards (create / join) */
+        .cp-choices { display: flex; flex-direction: column; gap: 14px; width: 100%; margin-top: 8px; }
+        .cp-choice-card {
+            width: 100%; padding: 26px 22px; border-radius: 24px;
+            border: none; cursor: pointer; text-align: left;
+            transition: transform 0.15s;
+        }
+        .cp-choice-card:active { transform: scale(0.97); }
+        .cp-choice-card.create { background: linear-gradient(135deg, #f7971e, #ffd200); }
+        .cp-choice-card.join   { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .cp-choice-icon  { font-size: 36px; display: block; margin-bottom: 8px; }
+        .cp-choice-title { font-size: 20px; font-weight: 900; color: white; margin-bottom: 4px; }
+        .cp-choice-desc  { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.75); line-height: 1.4; }
+        .cp-choice-card.create .cp-choice-title { color: #1a0a00; }
+        .cp-choice-card.create .cp-choice-desc  { color: rgba(26,10,0,0.6); }
+
+        /* Saved packs */
+        .saved-packs-section { width: 100%; margin-bottom: 4px; }
+        .saved-pack-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 13px 14px; border-radius: 14px;
+            background: rgba(255,255,255,0.06);
+            border: 1.5px solid rgba(255,255,255,0.1);
+            margin-bottom: 8px;
+        }
+        .saved-pack-icon  { font-size: 22px; flex-shrink: 0; }
+        .saved-pack-info  { flex: 1; }
+        .saved-pack-name  { font-size: 15px; font-weight: 800; color: white; }
+        .saved-pack-count { font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 700; margin-top: 1px; }
+        .saved-pack-del {
+            padding: 6px 10px; border-radius: 8px;
+            background: rgba(255,90,90,0.15); border: none;
+            color: rgba(255,107,107,0.8); font-size: 13px; font-weight: 900;
+            cursor: pointer;
+        }
+
+        /* Code display */
+        .cp-code-box {
+            width: 100%; padding: 22px; border-radius: 20px;
+            background: rgba(255,255,255,0.07);
+            border: 2px solid rgba(255,255,255,0.14);
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            margin-bottom: 20px;
+        }
+        .cp-code-label { font-size: 10px; font-weight: 800; letter-spacing: 2px; color: rgba(255,255,255,0.4); text-transform: uppercase; }
+        .cp-code-value {
+            font-size: 52px; font-weight: 900; color: white;
+            letter-spacing: 12px; line-height: 1;
+        }
+        .cp-copy-btn {
+            margin-top: 6px; padding: 8px 20px; border-radius: 10px;
+            background: rgba(255,255,255,0.12); border: none;
+            color: rgba(255,255,255,0.7); font-family: 'Nunito', sans-serif;
+            font-size: 13px; font-weight: 800; cursor: pointer;
+            transition: background 0.15s;
+        }
+        .cp-copy-btn:active { background: rgba(255,255,255,0.2); }
+
+        /* Member list */
+        .cp-member-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 14px; border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 6px;
+        }
+        .cp-member-name  { font-size: 14px; font-weight: 800; color: rgba(255,255,255,0.8); }
+        .cp-member-badge {
+            font-size: 9px; font-weight: 900; letter-spacing: 1px;
+            padding: 3px 8px; border-radius: 6px;
+            background: linear-gradient(135deg, #f7971e, #ffd200); color: #1a0a00;
+        }
+
+        /* Join requests */
+        .cp-join-req {
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 12px 14px; border-radius: 14px;
+            background: rgba(255,255,255,0.08);
+            border: 1.5px solid rgba(255,255,255,0.15);
+            margin-bottom: 8px;
+        }
+        .cp-join-req-name { font-size: 14px; font-weight: 800; color: white; flex: 1; }
+        .cp-join-req-btns { display: flex; gap: 8px; }
+        .cp-accept-btn {
+            padding: 8px 14px; border-radius: 10px;
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            border: none; color: #0a2015;
+            font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 900;
+            cursor: pointer;
+        }
+        .cp-reject-btn {
+            padding: 8px 12px; border-radius: 10px;
+            background: rgba(255,90,90,0.18); border: none;
+            color: #FF6B6B; font-family: 'Nunito', sans-serif;
+            font-size: 13px; font-weight: 900; cursor: pointer;
+        }
+
+        /* Question list */
+        .cp-q-list {
+            max-height: 200px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 6px;
+            margin-bottom: 10px;
+        }
+        .cp-q-item {
+            padding: 10px 14px; border-radius: 12px;
+            background: rgba(255,255,255,0.06);
+            font-size: 13px;
+        }
+        .cp-q-text   { color: rgba(255,255,255,0.85); font-weight: 700; display: block; }
+        .cp-q-author { color: rgba(255,255,255,0.35); font-size: 11px; font-style: italic; font-weight: 700; margin-top: 2px; display: block; }
+
+        /* Add question row */
+        .cp-add-row { display: flex; gap: 10px; width: 100%; margin-bottom: 4px; }
+        .cp-add-btn {
+            flex-shrink: 0; padding: 0 18px; height: 50px; border-radius: 14px;
+            background: rgba(255,255,255,0.12);
+            border: 2px solid rgba(255,255,255,0.18);
+            color: white; font-family: 'Nunito', sans-serif;
+            font-size: 14px; font-weight: 900; cursor: pointer;
+            transition: background 0.15s; white-space: nowrap;
+        }
+        .cp-add-btn:active { background: rgba(255,255,255,0.2); }
+
+        /* Code input for joiner */
+        .cp-code-input {
+            width: 100%; padding: 20px; border-radius: 18px;
+            background: rgba(255,255,255,0.09);
+            border: 2px solid rgba(255,255,255,0.14);
+            color: white; font-family: 'Nunito', sans-serif;
+            font-size: 40px; font-weight: 900; letter-spacing: 10px;
+            text-align: center; outline: none;
+            text-transform: uppercase;
+            transition: border-color 0.2s;
+            margin-bottom: 12px;
+        }
+        .cp-code-input:focus { border-color: rgba(255,255,255,0.4); }
+        .cp-code-input::placeholder { color: rgba(255,255,255,0.2); letter-spacing: 6px; font-size: 32px; }
+
+        /* Waiting / status states */
+        .cp-waiting { text-align: center; padding: 40px 0; }
+        .cp-waiting-spinner { font-size: 52px; animation: cpSpin 1.4s linear infinite; display: block; margin-bottom: 16px; }
+        @keyframes cpSpin { to { transform: rotate(360deg); } }
+        .cp-waiting-text { font-size: 16px; font-weight: 800; color: rgba(255,255,255,0.55); }
+        .cp-pack-hero {
+            width: 100%; padding: 18px 20px; border-radius: 18px;
+            background: rgba(255,255,255,0.07);
+            border: 1.5px solid rgba(255,255,255,0.12);
+            margin-bottom: 20px; text-align: center;
+        }
+        .cp-pack-hero-name { font-size: 20px; font-weight: 900; color: white; }
+        .cp-status-bar {
+            padding: 10px 16px; border-radius: 12px;
+            background: rgba(255,255,255,0.06);
+            font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.45);
+            text-align: center; margin-top: 10px;
+        }
+        .cp-done-wrap { text-align: center; padding: 20px 0; }
+        .cp-done-emoji { font-size: 72px; margin-bottom: 16px; }
+        .cp-done-title { font-size: 26px; font-weight: 900; color: white; margin-bottom: 8px; }
+        .cp-done-sub   { font-size: 15px; color: rgba(255,255,255,0.45); font-weight: 700; line-height: 1.5; }
+
+        /* Invite toggle */
+        .cp-invite-toggle {
+            width: 100%; padding: 13px 16px; border-radius: 14px;
+            background: rgba(255,255,255,0.07);
+            border: 1.5px solid rgba(255,255,255,0.14);
+            color: rgba(255,255,255,0.65);
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px; font-weight: 800;
+            cursor: pointer; transition: all 0.15s; text-align: left;
+        }
+        .cp-invite-toggle:hover { background: rgba(255,255,255,0.12); color: white; }
+
+        /* Custom pill */
+        .cat-pill-custom.active { background: linear-gradient(135deg, #f7971e, #ffd200); color: #1a0a00; }
 
         /* ── Confetti ── */
         #confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 10; }
@@ -446,6 +771,16 @@
             display: inline-block;
             background: linear-gradient(135deg, #FFD700, #FF8E53);
             color: #2a0800;
+            font-size: 9px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 0.8px;
+            border-radius: 5px; padding: 2px 6px;
+            margin-left: 5px; vertical-align: middle;
+            white-space: nowrap;
+        }
+        .pill-custom-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #a78bfa, #7c3aed);
+            color: #fff;
             font-size: 9px; font-weight: 900;
             text-transform: uppercase; letter-spacing: 0.8px;
             border-radius: 5px; padding: 2px 6px;
@@ -611,6 +946,9 @@
         #transitionScreen.ts-ethical      { background: linear-gradient(135deg,#005c97,#363795); }
         #transitionScreen.ts-deep         { background: linear-gradient(135deg,#0f2027,#203a43,#2c5364); }
         #transitionScreen.ts-random       { background: linear-gradient(135deg,#f093fb,#8b5cf6,#3b82f6,#06b6d4); }
+        #transitionScreen.ts-roast        { background: linear-gradient(135deg,#7f0000,#ee0979,#ff6a00); }
+        #transitionScreen.ts-us           { background: linear-gradient(135deg,#6a0572,#f953c6,#fc466b); }
+        #transitionScreen.ts-custom       { background: linear-gradient(135deg,#2d1b69,#7c3aed,#a78bfa); }
 
         #tsCatLabel {
             font-size: clamp(3.8rem, 13vw, 9rem);
@@ -695,10 +1033,13 @@
             animation: revealLR 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.55s both;
         }
         #homeScreen.intro .mode-cards .mode-card:nth-child(1) {
-            animation: jumpLand 0.65s cubic-bezier(0.34, 1.3, 0.64, 1) 0.88s both;
+            animation: jumpLand 0.65s cubic-bezier(0.34, 1.3, 0.64, 1) 0.88s backwards;
         }
         #homeScreen.intro .mode-cards .mode-card:nth-child(2) {
-            animation: jumpLand 0.65s cubic-bezier(0.34, 1.3, 0.64, 1) 1.02s both;
+            animation: jumpLand 0.65s cubic-bezier(0.34, 1.3, 0.64, 1) 1.02s backwards;
+        }
+        #homeScreen.intro .mode-cards .mode-card:nth-child(3) {
+            animation: jumpLand 0.65s cubic-bezier(0.34, 1.3, 0.64, 1) 1.16s backwards;
         }
     </style>
 </head>
@@ -715,7 +1056,7 @@
 <div class="screen active" id="homeScreen">
     <div class="screen-inner">
         <div class="home-logo">
-            Hypo<span class="gradient-text">thetically</span><br>Speaking...
+            Hypo<span class="gradient-text">thetically</span>...
         </div>
         <p class="home-tagline">Where honesty gets uncomfortable 😬</p>
 
@@ -725,11 +1066,179 @@
                 <div class="mode-card-title">Party Mode</div>
                 <div class="mode-card-desc">Directed questions about the people you're with</div>
             </button>
+            <button class="mode-card mode-card-couples" onclick="selectMode('couples')">
+                <span class="mode-card-emoji">💑</span>
+                <div class="mode-card-title">Couples Mode</div>
+                <div class="mode-card-desc">Just the two of you — go deeper than you're used to</div>
+            </button>
             <button class="mode-card mode-card-general" onclick="selectMode('general')">
-                <span class="mode-card-emoji">💬</span>
+                <span class="mode-card-emoji">🤔</span>
                 <div class="mode-card-title">Discussion Mode</div>
                 <div class="mode-card-desc">Open questions for the whole group to discuss</div>
             </button>
+        </div>
+
+        <button class="custom-pack-cta" onclick="openCustomPack()">
+            <span class="cta-icon">✏️</span>
+            <div class="cta-body">
+                <div class="cta-title">Create your own hypotheticals!</div>
+                <div class="cta-desc">Build a custom question pack with your group</div>
+            </div>
+            <span class="cta-arrow">→</span>
+        </button>
+    </div>
+</div>
+
+<!-- ════ CUSTOM PACK HOME ════ -->
+<div class="screen" id="customPackScreen">
+    <div class="screen-inner">
+        <div class="setup-top">
+            <button class="back-btn" onclick="goHome()">←</button>
+            <div class="setup-heading">
+                <div class="setup-title">Custom Packs</div>
+                <div class="setup-subtitle">Build or join a question pack</div>
+            </div>
+        </div>
+
+        <div class="saved-packs-section" id="savedPacksList"></div>
+
+        <div class="cp-choices">
+            <button class="cp-choice-card create" onclick="showScreen('createPackScreen'); initCreatePack()">
+                <span class="cp-choice-icon">✨</span>
+                <div class="cp-choice-title">Create a Pack</div>
+                <div class="cp-choice-desc">Name your pack, get a shareable code, let your group add questions</div>
+            </button>
+            <button class="cp-choice-card join" onclick="showScreen('joinPackScreen'); initJoinPack()">
+                <span class="cp-choice-icon">🔗</span>
+                <div class="cp-choice-title">Join a Pack</div>
+                <div class="cp-choice-desc">Enter the creator's code and contribute your own questions</div>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ════ CREATE PACK ════ -->
+<div class="screen" id="createPackScreen">
+    <div class="screen-inner">
+        <div class="setup-top">
+            <button class="back-btn" onclick="abortCreate()">←</button>
+            <div class="setup-heading">
+                <div class="setup-title" id="createPackTitle">Create Pack</div>
+                <div class="setup-subtitle" id="createPackSub">Name your question pack</div>
+            </div>
+        </div>
+
+        <!-- Phase 1: name -->
+        <div id="cpPhase1" style="width:100%">
+            <div class="section-label">Pack Name</div>
+            <input id="cpPackName" class="player-input" type="text" maxlength="30" placeholder="e.g. Movie Night Hypos…" style="width:100%;margin-bottom:16px" onkeydown="if(event.key==='Enter')startBuildingPack()">
+            <div class="toggle-row" style="margin-bottom:20px">
+                <div class="toggle-info">
+                    <span class="toggle-label">💑 Couples Mode pack</span>
+                    <span class="toggle-sublabel">Only appears in Couples Mode</span>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="cpCouplesToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <button class="start-btn" onclick="startBuildingPack()">Start Building →</button>
+        </div>
+
+        <!-- Phase 2: question editor -->
+        <div id="cpPhase2" style="display:none;width:100%">
+            <div class="section-label">Questions <span id="cpQCount" style="color:white;font-size:14px">0</span></div>
+            <div class="cp-q-list" id="cpQList" style="margin-bottom:10px"></div>
+
+            <div class="cp-add-row" style="margin-bottom:6px">
+                <input id="cpQInput" class="player-input" type="text" maxlength="200" placeholder="…you could only eat one food forever?" style="flex:1" onkeydown="if(event.key==='Enter')creatorAddQ()">
+                <button class="cp-add-btn" onclick="creatorAddQ()">+ Add</button>
+            </div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:16px;padding-left:2px">Questions automatically start with <em>"Hypothetically,"</em> — no need to write it yourself.</div>
+
+            <!-- Invite section (collapsed by default) -->
+            <button class="cp-invite-toggle" id="cpInviteToggle" onclick="toggleInviteSection()">
+                👥 Invite others to add questions
+            </button>
+            <div id="cpInviteSection" style="display:none;width:100%;margin-top:12px">
+                <div id="cpCodeBox" class="cp-code-box">
+                    <div class="cp-code-label">Share this code</div>
+                    <div class="cp-code-value" id="cpCode">----</div>
+                    <button class="cp-copy-btn" id="cpCopyBtn" onclick="copyRoomCode()">Copy Code</button>
+                </div>
+                <div class="section-label">In the Room</div>
+                <div id="cpMembers" style="width:100%;margin-bottom:12px">
+                    <div class="cp-member-row">
+                        <span class="cp-member-name">You (creator)</span>
+                        <span class="cp-member-badge">HOST</span>
+                    </div>
+                </div>
+                <div id="cpJoinRequests" style="display:none;width:100%">
+                    <div class="section-label">Join Requests</div>
+                    <div id="cpJoinRequestsList"></div>
+                </div>
+            </div>
+
+            <div style="height:20px"></div>
+            <button id="cpFinaliseBtn" class="start-btn" onclick="finalisePack()" style="background:linear-gradient(135deg,#43e97b,#38f9d7);color:#0a2015">
+                🔒 Finalise Pack
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ════ JOIN PACK ════ -->
+<div class="screen" id="joinPackScreen">
+    <div class="screen-inner">
+        <div class="setup-top">
+            <button class="back-btn" onclick="abortJoin()">←</button>
+            <div class="setup-heading">
+                <div class="setup-title">Join a Pack</div>
+                <div class="setup-subtitle">Enter the code from the creator</div>
+            </div>
+        </div>
+
+        <!-- Phase 1: entry -->
+        <div id="jpPhase1" style="width:100%">
+            <div class="section-label">Your Name (optional)</div>
+            <input id="jpName" class="player-input" type="text" maxlength="20" placeholder="e.g. Alex…" style="width:100%;margin-bottom:16px">
+            <div class="section-label">Room Code</div>
+            <input id="jpCode" class="cp-code-input" type="text" maxlength="4" placeholder="XXXX" autocapitalize="characters" onkeydown="if(event.key==='Enter')joinRoom()">
+            <p class="error-msg" id="jpError">Code not found — check with the creator.</p>
+            <button class="start-btn" onclick="joinRoom()">Join Pack →</button>
+        </div>
+
+        <!-- Phase 2: waiting -->
+        <div id="jpPhase2" style="display:none;width:100%">
+            <div class="cp-waiting">
+                <span class="cp-waiting-spinner">⏳</span>
+                <div class="cp-waiting-text">Waiting to be accepted by the creator…</div>
+            </div>
+        </div>
+
+        <!-- Phase 3: active -->
+        <div id="jpPhase3" style="display:none;width:100%">
+            <div class="cp-pack-hero">
+                <div class="cp-pack-hero-name" id="jpPackName">Pack Name</div>
+            </div>
+            <div class="section-label">Add Your Hypotheticals</div>
+            <div class="cp-add-row" style="margin-bottom:12px">
+                <input id="jpQInput" class="player-input" type="text" maxlength="200" placeholder="Type a hypothetical…" style="flex:1" onkeydown="if(event.key==='Enter')joinerAddQ()">
+                <button class="cp-add-btn" onclick="joinerAddQ()">+ Add</button>
+            </div>
+            <div class="section-label">Your Contributions <span id="jpQCount" style="color:white">0</span></div>
+            <div class="cp-q-list" id="jpQList"></div>
+            <div class="cp-status-bar" id="jpStatus">Pack is open — keep adding questions!</div>
+        </div>
+
+        <!-- Phase 4: done -->
+        <div id="jpPhase4" style="display:none;width:100%">
+            <div class="cp-done-wrap">
+                <div class="cp-done-emoji">✅</div>
+                <div class="cp-done-title" id="jpDoneTitle">Pack is ready!</div>
+                <div class="cp-done-sub">It's been saved to your game. You'll find it in the question style list when you start a round.</div>
+                <button class="start-btn" style="margin-top:32px" onclick="goHome()">Let's Play! 🚀</button>
+            </div>
         </div>
     </div>
 </div>
@@ -758,7 +1267,7 @@
                     <input class="player-input" type="text" placeholder="Player 2 name…" maxlength="18">
                 </div>
             </div>
-            <button class="add-player-btn" onclick="addPlayer()">+ Add another player</button>
+            <button class="add-player-btn" id="addPlayerBtn" onclick="addPlayer()">+ Add another player</button>
         </div>
 
         <div id="partyExtrasSection" style="display:none">
@@ -848,10 +1357,38 @@
         <div class="end-emoji">🎊</div>
         <div class="end-title">That's a wrap!</div>
         <p class="end-sub">Hope things aren't too awkward now… 😅<br>Or maybe that was the point.</p>
-        <div class="end-actions">
+
+        <div class="quote-section" id="quoteSection" style="display:none">
+            <p class="quote-prompt">Got a highlight from tonight?</p>
+            <textarea id="quoteText" class="quote-textarea" maxlength="200" placeholder="&quot;Something unforgettable that happened…&quot;"></textarea>
+            <input id="quoteName" class="quote-name-input" type="text" maxlength="30" placeholder="— Who said it? (optional)">
+            <button class="create-card-btn" onclick="createShareCard()">Create Highlight Card 📸</button>
+            <button class="skip-quote-btn" onclick="showEndActions()">Skip →</button>
+        </div>
+
+        <div class="end-actions" id="endActions" style="display:none">
             <button class="play-again-btn" onclick="playAgain()">Play Again 🔄</button>
             <button class="home-btn" onclick="goHome()">Back to Home</button>
         </div>
+    </div>
+</div>
+
+<!-- ════ SHARE OVERLAY ════ -->
+<div id="shareOverlay">
+    <div class="share-modal">
+        <img id="sharePreviewImg" class="share-preview-img" src="" alt="Your highlight card">
+        <div class="share-modal-title">Your Highlight Card ✨</div>
+        <div class="share-modal-sub">Share it or save it to your photos</div>
+        <div class="share-opts">
+            <button class="share-opt-btn share-opt-native" onclick="doShare()">
+                <span class="so-icon">📤</span>Share
+            </button>
+            <button class="share-opt-btn share-opt-download" onclick="doDownload()">
+                <span class="so-icon">💾</span>Save
+            </button>
+        </div>
+        <button class="share-add-btn" onclick="addAnotherCard()">+ Add Another Highlight</button>
+        <button class="share-done-btn" onclick="closeShareOverlay()">Done →</button>
     </div>
 </div>
 
@@ -882,32 +1419,42 @@
 
 const PILL_CONFIGS = {
     party: [
-        { cat: 'chaos',         label: '🔥 Chaos',             rec: true  },
-        { cat: 'spicy',         label: '🌶️ Spicy',            rec: true  },
-        { cat: 'controversial', label: '💣 Controversial',     rec: true  },
-        { cat: 'general',       label: '🌍 General',           rec: false },
-        { cat: 'ethical',       label: '⚖️ Ethical',           rec: false },
-        { cat: 'deep',          label: '🌊 Deep & Meaningful', rec: false },
-        { cat: 'random',        label: '🎲 Random Mix',        rec: false },
+        { cat: 'chaos',         label: '😵 Chaos',             heat: 3 },
+        { cat: 'spicy',         label: '🌶️ Spicy',            heat: 3 },
+        { cat: 'roast',         label: '🔥 Group Roast',       heat: 2 },
+        { cat: 'controversial', label: '💣 Controversial',     heat: 1 },
+        { cat: 'general',       label: '🌍 General',           heat: 0 },
+        { cat: 'ethical',       label: '⚖️ Ethical',           heat: 0 },
+        { cat: 'deep',          label: '🌊 Deep & Meaningful', heat: 0 },
+        { cat: 'random',        label: '🎲 Random Mix',        heat: 0 },
     ],
     general: [
-        { cat: 'general',       label: '🌍 General',           rec: false },
-        { cat: 'spicy',         label: '🌶️ Spicy',            rec: false },
-        { cat: 'deep',          label: '🌊 Deep & Meaningful', rec: false },
-        { cat: 'ethical',       label: '⚖️ Ethical',           rec: false },
-        { cat: 'controversial', label: '💣 Controversial',     rec: false },
-        { cat: 'chaos',         label: '🔥 Chaos',             rec: false },
-        { cat: 'random',        label: '🎲 Random Mix',        rec: false },
+        { cat: 'general',       label: '🌍 General',           heat: 0 },
+        { cat: 'spicy',         label: '🌶️ Spicy',            heat: 0 },
+        { cat: 'deep',          label: '🌊 Deep & Meaningful', heat: 0 },
+        { cat: 'ethical',       label: '⚖️ Ethical',           heat: 0 },
+        { cat: 'controversial', label: '💣 Controversial',     heat: 0 },
+        { cat: 'chaos',         label: '😵 Chaos',             heat: 0 },
+        { cat: 'random',        label: '🎲 Random Mix',        heat: 0 },
+    ],
+    couples: [
+        { cat: 'us',   label: '💑 Us',              heat: 0 },
+        { cat: 'deep', label: '🌊 Deep & Meaningful', heat: 0 },
+        { cat: 'spicy', label: '🌶️ Spicy',          heat: 0 },
     ],
 };
 
 function renderCategoryPills(mode) {
     const container = document.getElementById('categoryPills');
     const configs = PILL_CONFIGS[mode];
-    container.innerHTML = configs.map(({ cat, label, rec }, i) =>
-        `<button class="cat-pill${i === 0 ? ' active' : ''}" data-cat="${cat}" onclick="selectCat(this)">${label}${rec ? '<span class="pill-rec">★ Recommended</span>' : ''}</button>`
+    const customPills = getCustomPacks()
+        .filter(p => mode === 'couples' ? p.couples === true : p.couples !== true)
+        .map(p => ({ cat: 'custom:' + p.id, label: '📦 ' + p.name, heat: 0, custom: true }));
+    const all = [...configs, ...customPills];
+    container.innerHTML = all.map(({ cat, label, heat, custom }, i) =>
+        `<button class="cat-pill${i === 0 ? ' active' : ''}${custom ? ' cat-pill-custom' : ''}" data-cat="${cat}" onclick="selectCat(this)">${label}${heat ? `<span class="pill-rec">${'🔥'.repeat(heat)}</span>` : ''}${custom ? '<span class="pill-custom-badge">Custom</span>' : ''}</button>`
     ).join('');
-    state.category = configs[0].cat;
+    state.category = all[0].cat;
 }
 
 const DARES = [
@@ -959,8 +1506,11 @@ const CAT_META = {
     deep:         { emoji: '🌊', label: 'Deep & Meaningful', decos: ['🌊','💙','🌙','✨','🪐','💫','🌌'] },
     ethical:      { emoji: '⚖️', label: 'Ethical',          decos: ['⚖️','🤝','💭','🌱','🕊️','🔮','🧭'] },
     controversial:{ emoji: '💣', label: 'Controversial',     decos: ['💣','⚡','🔪','💀','😤','🤯','💥'] },
-    chaos:        { emoji: '🔥', label: 'Chaos',             decos: ['🔥','😈','🌪️','💀','🤭','😏','👀'] },
+    chaos:        { emoji: '😵', label: 'Chaos',             decos: ['😵','😈','🌪️','💀','🤭','😏','👀'] },
+    roast:        { emoji: '🔥', label: 'Group Roast',       decos: ['🔥','😬','💀','👀','😭','💅','🫵'] },
     random:       { emoji: '🎲', label: 'Random Mix',        decos: ['🎲','🎯','🎪','🃏','🎠','🎨','🎭'] },
+    custom:       { emoji: '📦', label: 'Custom',            decos: ['💭','✨','🎯','🤔','💡','😄','🌟'] },
+    us:           { emoji: '💑', label: 'Us',                decos: ['💑','🏠','❤️','💍','🌍','👶','💰'] },
 };
 
 // General mode: plain strings
@@ -1159,6 +1709,28 @@ const QUESTIONS = {
             "{player} — if you found out {other} had been two-faced about you to the rest of the group, what would you actually do?",
             "{player} — if {other} was about to make the worst decision of their life and you couldn't stop them with words, how far would you go?",
         ],
+        roast: [
+            "who in this group would most likely cry at their own roast — and are they tearing up right now?",
+            "who in this group would least likely survive a week without their phone, and would they even try?",
+            "who in this group is most likely to have googled themselves in the last 48 hours?",
+            "who in this group would most likely get catfished — and would they ever admit it?",
+            "who in this group is most likely to be the villain in someone else's story right now without knowing it?",
+            "who in this group would most likely fake being sick to get out of plans they agreed to?",
+            "who in this group is most likely to have a folder on their phone they'd never show anyone?",
+            "who in this group would most likely send a risky text to the wrong person — and how bad would the damage be?",
+            "who in this group is most likely to pretend they've read a book they've never opened?",
+            "who in this group would most likely get kicked out of a country for something completely avoidable?",
+            "who in this group is most likely to have rehearsed a speech in the mirror at some point this week?",
+            "who in this group would most likely go on a reality TV show — and which one fits them embarrassingly well?",
+            "who in this group is most likely to have stalked an ex on social media in the last month — and did they accidentally like something?",
+            "who in this group would most likely throw someone under the bus to get out of trouble — and have they already done it to someone in this room?",
+            "who in this group is most likely to be absolutely insufferable when they're hungry, and does everyone already know to avoid them?",
+            "who in this group is most likely to have a completely unhinged opinion they've never said out loud — and what do you think it is?",
+            "who in this group would most likely survive the longest on a deserted island, and who would tap out on day one?",
+            "who in this group is most likely to send a voice note longer than three minutes — unprompted?",
+            "who in this group would most likely be the person everyone pretends to like at a party but talks about on the way home?",
+            "who in this group is most likely to have a secret talent so random it would make everyone uncomfortable?",
+        ],
         chaos: [
             "{player} — who in this room do you find the least physically attractive? You have to answer.",
             "{player} — who in this room is most likely to be secretly gay or bisexual and just hasn't said anything yet?",
@@ -1173,6 +1745,61 @@ const QUESTIONS = {
             "{player} — who do you think has the smallest sexual experience out of everyone here — and are they aware people think that?",
             "{player} — who in this room is most likely to cheat on their partner, and are they in denial about it?",
             "{player} — if you had to vote one person out of this friend group permanently, who are you voting for?",
+        ],
+    },
+    couples: {
+        spicy: [
+            "{player}, on a scale of 1–10, how satisfied are you with your sex life right now — and does {other} know that's your honest number?",
+            "{player}, is there something sexual you've wanted to try with {other} that you've never actually brought up? What's stopped you?",
+            "{player}, what's a specific thing {other} does in bed that you genuinely love but have never told them how much it affects you?",
+            "{player}, what's a fantasy you've had involving {other} that you've never shared?",
+            "{player}, where is somewhere you've thought about having sex with {other} that you haven't yet?",
+            "{player}, what's one thing you wish {other} would do more of in the bedroom — be specific?",
+            "{player}, when was the last time {other} did something that genuinely turned you on without trying — what was it?",
+            "{player}, is there a position or dynamic in bed that you secretly want more of but haven't asked for?",
+            "{player}, how often do you actually want to have sex with {other} — and how does that compare to reality?",
+            "{player}, is there something {other} used to do early in the relationship that you wish they still did?",
+            "{player}, if {other} gave you complete control for one night with no questions asked, what would you do?",
+            "{player}, have you ever been turned on by {other} at a completely inappropriate time or place — when was it?",
+            "{player}, what's something you'd want {other} to say or do that would immediately get you in the mood?",
+            "{player}, is there a kink or interest you have that you haven't fully admitted to {other} yet?",
+        ],
+        deep: [
+            "{player}, what do you think {other} worries about most that they never actually say out loud to you?",
+            "{player}, what's one thing you genuinely admire about how {other} handles life that you've never properly told them?",
+            "{player}, is there a version of yourself that you feel {other} hasn't fully met yet?",
+            "{player}, what's something {other} does that they probably don't realise genuinely makes you feel loved?",
+            "{player}, if you could change one thing about how you show up in this relationship, what would it be?",
+            "{player}, what do you think is the strongest thing about you and {other} as a team?",
+            "{player}, is there something you've needed from {other} lately that you haven't known how to ask for?",
+            "{player}, what's the moment you felt closest to {other} — and have you ever told them it was that moment?",
+            "{player}, what's a fear you have about this relationship that you've never said out loud?",
+            "{player}, what does {other} do that makes you feel most secure — and does {other} know it matters that much to you?",
+            "{player}, if you could go back and do one thing differently in this relationship, what would it be?",
+            "{player}, what's something you want for {other}'s life that you're not sure they want enough for themselves?",
+            "{player}, if you could see yourself the way {other} sees you on your best day, what do you think you'd find?",
+        ],
+        us: [
+            "{player}, would you be comfortable fully merging finances with {other} — one account, total transparency — or does that idea make you uncomfortable?",
+            "If one of you earned significantly more than the other long-term, how do you think that should actually work when it comes to shared expenses and big decisions?",
+            "{player}, if {other} had a close friend you genuinely couldn't stand, what would you realistically expect to happen?",
+            "If one of you wanted to move to a completely different city or country for a job and the other didn't want to go, how do you think that conversation would really go?",
+            "{player}, what's your honest timeline on children — and how confident are you that {other} pictures the same thing?",
+            "If one of you changed their mind about having children after you'd both agreed, how would you realistically navigate that together?",
+            "{player}, what's the one thing in your life you'd find it hardest to change or give up for this relationship, even if {other} genuinely needed you to?",
+            "If {other} got their absolute dream job but it meant living abroad for two years, what honestly happens to the relationship?",
+            "{player}, is there a boundary you have that you don't feel {other} fully understands or respects yet?",
+            "If you hit a major disagreement about how to raise a child — values, schooling, discipline — how would you actually resolve it?",
+            "What does a realistic five-year plan look like to you right now — and do you think {other} is picturing the same version?",
+            "{player}, how important is it to you to maintain your own close friendships outside this relationship — and do you feel {other} genuinely supports that?",
+            "If one of you needed to pause their career to care for a sick family member for an extended period, how would that actually work between you?",
+            "{player}, what's a conversation you and {other} keep avoiding that you probably both know you need to have?",
+            "If you genuinely disagree on something big and can't find a middle ground, who tends to give in — and is that actually fair?",
+            "{player}, how aligned do you honestly feel with {other} on the kind of life you're building together — location, lifestyle, pace, ambitions?",
+            "If one of you wanted to make a major financial decision — a house, an investment, a big purchase — without fully consulting the other, where do you both draw the line?",
+            "{player}, what does your ideal life look like in ten years — and have you ever actually said that out loud to {other}?",
+            "If one of you received a large inheritance and had strong opinions on how to spend it, how would you approach that as a couple?",
+            "{player}, is there something {other} does with their time or money that you'd want to talk about but haven't felt comfortable raising?",
         ],
     },
 };
@@ -1224,10 +1851,15 @@ function showScreen(id) {
 
 function selectMode(mode) {
     state.mode = mode;
-    document.getElementById('setupTitle').textContent = mode === 'party' ? 'Party Mode' : 'Discussion Mode';
-    document.getElementById('setupSub').textContent   = mode === 'party' ? 'Add your squad below' : 'Pick your vibe';
-    document.getElementById('playersSection').style.display      = mode === 'party' ? 'block' : 'none';
-    document.getElementById('partyExtrasSection').style.display  = mode === 'party' ? 'block' : 'none';
+    const titles = { party: 'Party Mode', general: 'Discussion Mode', couples: 'Couples Mode' };
+    const subs   = { party: 'Add your squad below', general: 'Pick your vibe', couples: 'Just the two of you' };
+    document.getElementById('setupTitle').textContent = titles[mode] || mode;
+    document.getElementById('setupSub').textContent   = subs[mode]  || '';
+    const showPlayers = mode === 'party' || mode === 'couples';
+    document.getElementById('playersSection').style.display     = showPlayers ? 'block' : 'none';
+    document.getElementById('partyExtrasSection').style.display = mode === 'party' ? 'block' : 'none';
+    document.getElementById('addPlayerBtn').style.display       = mode === 'couples' ? 'none' : '';
+    if (mode === 'couples') resetPlayerInputs(2);
     renderCategoryPills(mode);
     showScreen('setupScreen');
 }
@@ -1266,10 +1898,19 @@ function removePlayer(btn) {
     });
 }
 
-function resetPlayerInputs() {
-    document.getElementById('playerInputs').innerHTML = `
-        <div class="player-row"><input class="player-input" type="text" placeholder="Player 1 name…" maxlength="18"></div>
-        <div class="player-row"><input class="player-input" type="text" placeholder="Player 2 name…" maxlength="18"></div>`;
+function resetPlayerInputs(count = 2) {
+    const labels = count === 2
+        ? ['Player 1 name…', 'Player 2 name…']
+        : ['Player 1 name…', 'Player 2 name…'];
+    if (state.mode === 'couples') {
+        document.getElementById('playerInputs').innerHTML =
+            `<div class="player-row"><input class="player-input" type="text" placeholder="Your name…" maxlength="18"></div>` +
+            `<div class="player-row"><input class="player-input" type="text" placeholder="Partner's name…" maxlength="18"></div>`;
+    } else {
+        document.getElementById('playerInputs').innerHTML =
+            `<div class="player-row"><input class="player-input" type="text" placeholder="Player 1 name…" maxlength="18"></div>` +
+            `<div class="player-row"><input class="player-input" type="text" placeholder="Player 2 name…" maxlength="18"></div>`;
+    }
 }
 
 function getPlayerNames() {
@@ -1280,7 +1921,12 @@ function getPlayerNames() {
 function buildQuestions() {
     const pool = QUESTIONS[state.mode];
     let qs;
-    if (state.category === 'random') {
+    if (state.category.startsWith('custom:')) {
+        const packId = state.category.slice(7);
+        const pack   = getCustomPacks().find(p => p.id === packId);
+        qs = (pack ? pack.questions : []).map(t => ({ text: t, cat: 'custom' }));
+        if (!qs.length) qs = [{ text: 'No questions in this pack yet!', cat: 'custom' }];
+    } else if (state.category === 'random') {
         qs = [
             ...pool.general.map(t       => ({ text: t, cat: 'general'       })),
             ...pool.spicy.map(t         => ({ text: t, cat: 'spicy'         })),
@@ -1288,6 +1934,7 @@ function buildQuestions() {
             ...pool.ethical.map(t       => ({ text: t, cat: 'ethical'       })),
             ...pool.controversial.map(t => ({ text: t, cat: 'controversial' })),
             ...pool.chaos.map(t         => ({ text: t, cat: 'chaos'         })),
+            ...(pool.roast || []).map(t => ({ text: t, cat: 'roast'         })),
         ];
     } else {
         qs = pool[state.category].map(t => ({ text: t, cat: state.category }));
@@ -1296,6 +1943,8 @@ function buildQuestions() {
     if (state.mode === 'party' && state.players.length < 3) {
         qs = qs.filter(q => !q.text.includes('{other2}'));
     }
+    // Custom packs play through exactly the questions entered, no limit
+    if (state.category.startsWith('custom:')) return shuffle(qs);
     // Always return exactly 20 — cycle through the pool if it's smaller
     let pool20 = shuffle(qs);
     while (pool20.length < 20) pool20 = [...pool20, ...shuffle(qs)];
@@ -1303,7 +1952,7 @@ function buildQuestions() {
 }
 
 function startGame() {
-    if (state.mode === 'party') {
+    if (state.mode === 'party' || state.mode === 'couples') {
         const names = getPlayerNames();
         if (names.length < 2) {
             const err = document.getElementById('errorMsg');
@@ -1312,10 +1961,16 @@ function startGame() {
             return;
         }
         state.players = names;
-        state.punishDrinks  = document.getElementById('toggleDrinks').checked;
-        state.punishDares   = document.getElementById('toggleDares').checked;
-        state.drinkingGame  = document.getElementById('toggleDrinking').checked;
-        state.drinkScreens  = state.drinkingGame ? generateDrinkScreens(20) : new Set();
+        if (state.mode === 'party') {
+            state.punishDrinks = document.getElementById('toggleDrinks').checked;
+            state.punishDares  = document.getElementById('toggleDares').checked;
+            state.drinkingGame = document.getElementById('toggleDrinking').checked;
+        } else {
+            state.punishDrinks = false;
+            state.punishDares  = false;
+            state.drinkingGame = false;
+            state.drinkScreens = new Set();
+        }
     } else {
         state.punishDrinks = false;
         state.punishDares  = false;
@@ -1323,6 +1978,9 @@ function startGame() {
         state.drinkScreens = new Set();
     }
     state.questions = buildQuestions();
+    if (state.mode === 'party') {
+        state.drinkScreens = state.drinkingGame ? generateDrinkScreens(state.questions.length) : new Set();
+    }
     state.index = 0;
     startGameAudio();
     runTransition(() => {
@@ -1442,7 +2100,7 @@ function advance() {
         state.index++;
         if (state.index >= state.questions.length) {
             card.classList.remove('out');
-            showScreen('endScreen');
+            showEndScreen();
             spawnConfetti();
             return;
         }
@@ -1653,11 +2311,13 @@ function startGameAudio() {
 const TS_CONFIG = {
     general:       { label: '🌍 General',           anim: 'anim-fade-scale'  },
     spicy:         { label: '🌶️ Spicy',            anim: 'anim-from-left'   },
-    chaos:         { label: '🔥 Chaos',             anim: 'anim-glitch'      },
+    chaos:         { label: '😵 Chaos',             anim: 'anim-glitch'      },
+    roast:         { label: '🔥 Group Roast',       anim: 'anim-from-top'    },
     controversial: { label: '💣 Controversial',     anim: 'anim-from-top'    },
     ethical:       { label: '⚖️ Ethical',           anim: 'anim-from-bottom' },
     deep:          { label: '🌊 Deep & Meaningful', anim: 'anim-from-right'  },
     random:        { label: '🎲 Random Mix',         anim: 'anim-spin-in'     },
+    us:            { label: '💑 Us',                 anim: 'anim-fade-scale'  },
 };
 
 const _whistleAudio = new Audio('music/whistle.mp3');
@@ -1670,8 +2330,16 @@ function playWhistle() {
 }
 
 function runTransition(callback) {
-    const cat = state.category;
-    const cfg = TS_CONFIG[cat] || TS_CONFIG.general;
+    const cat    = state.category;
+    const isCustom = cat.startsWith('custom:');
+    const tsClass  = isCustom ? 'custom' : cat;
+    let cfg = TS_CONFIG[cat] || TS_CONFIG.general;
+    if (isCustom) {
+        const packId   = cat.slice(7);
+        const pack     = getCustomPacks().find(p => p.id === packId);
+        const packName = pack ? pack.name : 'Custom Pack';
+        cfg = { label: '📦 ' + packName, anim: 'anim-fade-scale' };
+    }
     const ts  = document.getElementById('transitionScreen');
     const lbl = document.getElementById('tsCatLabel');
     const st  = document.getElementById('tsStart');
@@ -1684,7 +2352,7 @@ function runTransition(callback) {
     st.style.opacity = '0';
 
     // show screen with gradient
-    ts.classList.add('ts-visible', `ts-${cat}`);
+    ts.classList.add('ts-visible', `ts-${tsClass}`);
 
     // 180ms: animate category label in
     setTimeout(() => {
@@ -1710,9 +2378,570 @@ function runTransition(callback) {
 }
 
 // ═══════════════════════════════════════════════════
+//  CUSTOM PACKS — storage
+// ═══════════════════════════════════════════════════
+
+function getCustomPacks() {
+    try { return JSON.parse(localStorage.getItem('hypo_packs') || '[]'); } catch { return []; }
+}
+function saveCustomPack(pack) {
+    const all = getCustomPacks();
+    const i   = all.findIndex(p => p.id === pack.id);
+    if (i >= 0) all[i] = pack; else all.push(pack);
+    localStorage.setItem('hypo_packs', JSON.stringify(all));
+}
+function deleteCustomPack(id, name) {
+    if (!confirm('Delete "' + name + '"? This can\'t be undone.')) return;
+    localStorage.setItem('hypo_packs', JSON.stringify(getCustomPacks().filter(p => p.id !== id)));
+    renderSavedPacks();
+}
+
+// ─── Custom Pack home ───
+
+function openCustomPack() {
+    renderSavedPacks();
+    showScreen('customPackScreen');
+}
+
+function renderSavedPacks() {
+    const packs = getCustomPacks();
+    const el    = document.getElementById('savedPacksList');
+    if (!packs.length) { el.innerHTML = ''; return; }
+    el.innerHTML =
+        '<div class="section-label" style="margin-bottom:10px">Your Packs</div>' +
+        packs.map(p =>
+            `<div class="saved-pack-row">
+                <span class="saved-pack-icon">${p.couples ? '💑' : '📦'}</span>
+                <div class="saved-pack-info">
+                    <div class="saved-pack-name">${p.name}</div>
+                    <div class="saved-pack-count">${p.questions.length} question${p.questions.length !== 1 ? 's' : ''} · ${p.couples ? 'Couples Mode' : 'Party &amp; Discussion'}</div>
+                </div>
+                <button class="saved-pack-del" onclick="deleteCustomPack('${p.id}', '${p.name.replace(/'/g, "\\'")}')">🗑 Delete</button>
+            </div>`
+        ).join('') +
+        '<div style="height:20px"></div>';
+}
+
+// ═══════════════════════════════════════════════════
+//  CUSTOM PACKS — creator side
+// ═══════════════════════════════════════════════════
+
+let _cpPeer       = null;
+let _cpConns      = {};
+let _cpQs         = [];
+let _cpName       = '';
+let _cpCode       = '';
+let _cpInviteOpen = false;
+let _cpCouples    = false;
+
+function generateRoomCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    return Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+function initCreatePack() {
+    document.getElementById('cpPackName').value = '';
+    document.getElementById('cpPhase1').style.display  = 'block';
+    document.getElementById('cpPhase2').style.display  = 'none';
+    document.getElementById('cpQList').innerHTML        = '';
+    document.getElementById('cpQCount').textContent     = '0';
+    document.getElementById('cpInviteSection').style.display = 'none';
+    document.getElementById('cpInviteToggle').textContent    = '👥 Invite others to add questions';
+    _cpQs = []; _cpConns = {}; _cpName = ''; _cpCode = ''; _cpInviteOpen = false; _cpCouples = false;
+    document.getElementById('cpCouplesToggle').checked = false;
+    if (_cpPeer) { try { _cpPeer.destroy(); } catch(e) {} _cpPeer = null; }
+}
+
+function startBuildingPack() {
+    const name = document.getElementById('cpPackName').value.trim();
+    if (!name) {
+        const el = document.getElementById('cpPackName');
+        el.style.borderColor = 'rgba(255,107,107,0.8)';
+        el.focus();
+        setTimeout(() => { el.style.borderColor = ''; }, 1500);
+        return;
+    }
+    _cpName = name;
+    _cpCode = generateRoomCode();
+    _cpCouples = document.getElementById('cpCouplesToggle').checked;
+    document.getElementById('createPackSub').textContent = name;
+    document.getElementById('cpPhase1').style.display = 'none';
+    document.getElementById('cpPhase2').style.display = 'block';
+    document.getElementById('cpQInput').focus();
+}
+
+function toggleInviteSection() {
+    _cpInviteOpen = !_cpInviteOpen;
+    const section = document.getElementById('cpInviteSection');
+    const toggle  = document.getElementById('cpInviteToggle');
+    if (_cpInviteOpen) {
+        section.style.display = 'block';
+        toggle.textContent = '▲ Hide invite section';
+        if (!_cpPeer) _tryCreatePeer(_cpCode);
+    } else {
+        section.style.display = 'none';
+        toggle.textContent = '👥 Invite others to add questions';
+    }
+}
+
+function _tryCreatePeer(code) {
+    if (_cpPeer) { try { _cpPeer.destroy(); } catch(e) {} _cpPeer = null; }
+    document.getElementById('cpCode').textContent = '....';
+    const peer = new Peer('hypo-' + code, { debug: 0 });
+
+    peer.on('open', () => {
+        _cpPeer = peer; _cpCode = code;
+        document.getElementById('cpCode').textContent = code;
+        document.getElementById('cpMembers').innerHTML =
+            '<div class="cp-member-row"><span class="cp-member-name">You (creator)</span><span class="cp-member-badge">HOST</span></div>';
+        document.getElementById('cpJoinRequests').style.display = 'none';
+    });
+
+    peer.on('error', err => {
+        if (err.type === 'unavailable-id') { _tryCreatePeer(generateRoomCode()); return; }
+        document.getElementById('cpCode').textContent = 'Error — retry';
+    });
+
+    peer.on('connection', conn => {
+        const pid = conn.peer;
+        _cpConns[pid] = { conn, name: 'Guest', accepted: false };
+        conn.on('open', () => conn.on('data', d => _handleCreatorData(pid, d)));
+        conn.on('close', () => { delete _cpConns[pid]; _renderCPMembers(); _renderJoinReqs(); });
+    });
+}
+
+function _handleCreatorData(pid, data) {
+    if (data.type === 'hello') {
+        _cpConns[pid].name = data.name || 'Guest';
+        _renderJoinReqs();
+        document.getElementById('cpJoinRequests').style.display = 'block';
+    } else if (data.type === 'question') {
+        _cpAddQ(data.text, _cpConns[pid].name);
+    }
+}
+
+function _renderJoinReqs() {
+    const pending = Object.entries(_cpConns).filter(([, v]) => !v.accepted);
+    document.getElementById('cpJoinRequestsList').innerHTML = pending.map(([id, v]) =>
+        `<div class="cp-join-req" id="jreq-${id}">
+            <span class="cp-join-req-name">${v.name} wants to join</span>
+            <div class="cp-join-req-btns">
+                <button class="cp-accept-btn" onclick="acceptJoiner('${id}')">✓ Accept</button>
+                <button class="cp-reject-btn" onclick="rejectJoiner('${id}')">✗</button>
+            </div>
+        </div>`
+    ).join('');
+    document.getElementById('cpJoinRequests').style.display = pending.length ? 'block' : 'none';
+}
+
+function _renderCPMembers() {
+    const accepted = Object.values(_cpConns).filter(v => v.accepted);
+    document.getElementById('cpMembers').innerHTML =
+        '<div class="cp-member-row"><span class="cp-member-name">You (creator)</span><span class="cp-member-badge">HOST</span></div>' +
+        accepted.map(v => `<div class="cp-member-row"><span class="cp-member-name">${v.name}</span></div>`).join('');
+}
+
+function acceptJoiner(pid) {
+    _cpConns[pid].accepted = true;
+    _cpConns[pid].conn.send({ type: 'welcome', packName: _cpName });
+    _renderJoinReqs();
+    _renderCPMembers();
+}
+
+function rejectJoiner(pid) {
+    _cpConns[pid].conn.send({ type: 'reject' });
+    _cpConns[pid].conn.close();
+    delete _cpConns[pid];
+    _renderJoinReqs();
+}
+
+function _cpAddQ(text, author) {
+    _cpQs.push(text);
+    const item = document.createElement('div');
+    item.className = 'cp-q-item';
+    item.innerHTML = `<span class="cp-q-text">"${text}"</span>${author ? `<span class="cp-q-author">— ${author}</span>` : ''}`;
+    const list = document.getElementById('cpQList');
+    list.appendChild(item);
+    list.scrollTop = list.scrollHeight;
+    document.getElementById('cpQCount').textContent = _cpQs.length;
+}
+
+function creatorAddQ() {
+    const inp = document.getElementById('cpQInput');
+    const t   = inp.value.trim();
+    if (!t) return;
+    _cpAddQ(t, '');
+    inp.value = ''; inp.focus();
+}
+
+function copyRoomCode() {
+    navigator.clipboard.writeText(_cpCode).then(() => {
+        const btn = document.getElementById('cpCopyBtn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy Code'; }, 2000);
+    }).catch(() => {});
+}
+
+function finalisePack() {
+    const pending = document.getElementById('cpQInput').value.trim();
+    if (pending) _cpAddQ(pending, '');
+
+    const btn = document.getElementById('cpFinaliseBtn');
+
+    if (!_cpQs.length) {
+        btn.textContent = '⚠️ Add at least one question first';
+        btn.style.background = 'rgba(255,107,107,0.35)';
+        btn.style.color = 'white';
+        setTimeout(() => {
+            btn.textContent = '🔒 Finalise Pack';
+            btn.style.background = 'linear-gradient(135deg,#43e97b,#38f9d7)';
+            btn.style.color = '#0a2015';
+        }, 2200);
+        return;
+    }
+
+    const pack = { id: _cpCode, name: _cpName, questions: _cpQs, couples: _cpCouples };
+    saveCustomPack(pack);
+
+    Object.values(_cpConns).filter(v => v.accepted).forEach(({ conn }) =>
+        conn.send({ type: 'done', packId: _cpCode, packName: _cpName, questions: _cpQs })
+    );
+    if (_cpPeer) { try { _cpPeer.destroy(); } catch(e) {} _cpPeer = null; }
+
+    btn.textContent = '✅ "' + _cpName + '" saved!';
+    btn.disabled = true;
+    setTimeout(() => {
+        btn.disabled = false;
+        showScreen('customPackScreen');
+        renderSavedPacks();
+    }, 900);
+}
+
+function abortCreate() {
+    if (_cpPeer) { _cpPeer.destroy(); _cpPeer = null; }
+    showScreen('customPackScreen');
+}
+
+// ═══════════════════════════════════════════════════
+//  CUSTOM PACKS — joiner side
+// ═══════════════════════════════════════════════════
+
+let _jpPeer = null;
+let _jpConn = null;
+let _jpQs   = [];
+
+function initJoinPack() {
+    document.getElementById('jpPhase1').style.display = 'block';
+    document.getElementById('jpPhase2').style.display = 'none';
+    document.getElementById('jpPhase3').style.display = 'none';
+    document.getElementById('jpPhase4').style.display = 'none';
+    document.getElementById('jpCode').value  = '';
+    document.getElementById('jpName').value  = '';
+    document.getElementById('jpQList').innerHTML = '';
+    document.getElementById('jpQCount').textContent = '0';
+    document.getElementById('jpError').classList.remove('show');
+    _jpQs = [];
+    if (_jpPeer) { _jpPeer.destroy(); _jpPeer = null; }
+    _jpConn = null;
+}
+
+function joinRoom() {
+    const code = document.getElementById('jpCode').value.trim().toUpperCase();
+    const name = document.getElementById('jpName').value.trim() || 'Guest';
+    if (code.length !== 4) {
+        document.getElementById('jpError').textContent = 'Please enter the full 4-character code.';
+        document.getElementById('jpError').classList.add('show');
+        setTimeout(() => document.getElementById('jpError').classList.remove('show'), 2500);
+        return;
+    }
+    document.getElementById('jpPhase1').style.display = 'none';
+    document.getElementById('jpPhase2').style.display = 'block';
+
+    const peer = new Peer({ debug: 0 });
+    _jpPeer = peer;
+
+    peer.on('open', () => {
+        const conn = peer.connect('hypo-' + code, { reliable: true });
+        _jpConn = conn;
+
+        conn.on('open', () => conn.send({ type: 'hello', name }));
+
+        conn.on('data', d => _handleJoinerData(d));
+
+        conn.on('error', () => _jpConnFail('Could not connect — check the code and try again.'));
+        conn.on('close', () => {
+            if (document.getElementById('jpPhase3').style.display !== 'none') {
+                document.getElementById('jpStatus').textContent = 'Disconnected from creator.';
+            }
+        });
+    });
+
+    peer.on('error', () => _jpConnFail('Connection failed — check the code and try again.'));
+}
+
+function _jpConnFail(msg) {
+    if (_jpPeer) { _jpPeer.destroy(); _jpPeer = null; }
+    document.getElementById('jpPhase2').style.display = 'none';
+    document.getElementById('jpPhase1').style.display = 'block';
+    const err = document.getElementById('jpError');
+    err.textContent = msg;
+    err.classList.add('show');
+    setTimeout(() => err.classList.remove('show'), 3000);
+}
+
+function _handleJoinerData(data) {
+    if (data.type === 'welcome') {
+        document.getElementById('jpPhase2').style.display = 'none';
+        document.getElementById('jpPhase3').style.display = 'block';
+        document.getElementById('jpPackName').textContent = data.packName;
+        _jpQs = [];
+    } else if (data.type === 'reject') {
+        _jpConnFail('The creator did not accept your request.');
+    } else if (data.type === 'done') {
+        const pack = { id: data.packId, name: data.packName, questions: data.questions };
+        saveCustomPack(pack);
+        document.getElementById('jpPhase3').style.display = 'none';
+        document.getElementById('jpPhase4').style.display = 'block';
+        document.getElementById('jpDoneTitle').textContent = `"${data.packName}" is ready!`;
+        if (_jpPeer) { _jpPeer.destroy(); _jpPeer = null; }
+    }
+}
+
+function joinerAddQ() {
+    const inp  = document.getElementById('jpQInput');
+    const text = inp.value.trim();
+    if (!text || !_jpConn) return;
+    _jpConn.send({ type: 'question', text });
+    _jpQs.push(text);
+    const item = document.createElement('div');
+    item.className = 'cp-q-item';
+    item.innerHTML = `<span class="cp-q-text">"${text}"</span>`;
+    const list = document.getElementById('jpQList');
+    list.appendChild(item);
+    list.scrollTop = list.scrollHeight;
+    document.getElementById('jpQCount').textContent = _jpQs.length;
+    inp.value = ''; inp.focus();
+}
+
+function abortJoin() {
+    if (_jpPeer) { _jpPeer.destroy(); _jpPeer = null; }
+    _jpConn = null;
+    showScreen('customPackScreen');
+}
+
+// ═══════════════════════════════════════════════════
+//  END SCREEN
+// ═══════════════════════════════════════════════════
+
+function showEndScreen() {
+    showScreen('endScreen');
+    const quoteSection = document.getElementById('quoteSection');
+    const endActions   = document.getElementById('endActions');
+    if (state.mode === 'party') {
+        document.getElementById('quoteText').value = '';
+        document.getElementById('quoteName').value = '';
+        quoteSection.style.display = 'flex';
+        endActions.style.display   = 'none';
+    } else {
+        quoteSection.style.display = 'none';
+        endActions.style.display   = 'flex';
+    }
+}
+
+function showEndActions() {
+    document.getElementById('quoteSection').style.display = 'none';
+    document.getElementById('endActions').style.display   = 'flex';
+}
+
+// ═══════════════════════════════════════════════════
+//  SHARE CARD
+// ═══════════════════════════════════════════════════
+
+function _wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    const words = text.split(' ');
+    let line = '', lineY = y;
+    for (const word of words) {
+        const test = line + word + ' ';
+        if (ctx.measureText(test).width > maxWidth && line !== '') {
+            ctx.fillText(line.trim(), x, lineY);
+            line   = word + ' ';
+            lineY += lineHeight;
+        } else {
+            line = test;
+        }
+    }
+    if (line.trim()) ctx.fillText(line.trim(), x, lineY);
+    return lineY;
+}
+
+function createShareCard() {
+    const quoteText = document.getElementById('quoteText').value.trim();
+    if (!quoteText) {
+        const ta = document.getElementById('quoteText');
+        ta.style.borderColor = 'rgba(255,107,107,0.8)';
+        ta.focus();
+        setTimeout(() => { ta.style.borderColor = ''; }, 1500);
+        return;
+    }
+    const quoteName = document.getElementById('quoteName').value.trim();
+
+    document.fonts.ready.then(() => {
+        const W = 1080, H = 1080;
+        const canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        const ctx = canvas.getContext('2d');
+
+        // Background gradient per category
+        const gradMap = {
+            general:       ['#1a2980','#26d0ce'],
+            spicy:         ['#7b1e1e','#c0392b','#e67e22'],
+            chaos:         ['#0f0c29','#302b63','#24243e'],
+            controversial: ['#1c1c1c','#3d0000','#6b2737'],
+            ethical:       ['#005c97','#363795'],
+            deep:          ['#0f2027','#203a43','#2c5364'],
+            random:        ['#f093fb','#8b5cf6','#3b82f6'],
+        };
+        const colors = gradMap[state.category] || gradMap.general;
+        const bg = ctx.createLinearGradient(0, 0, W, H);
+        colors.forEach((c, i) => bg.addColorStop(i / Math.max(colors.length - 1, 1), c));
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+
+        // Vignette
+        const vig = ctx.createRadialGradient(W/2, H/2, H * 0.2, W/2, H/2, H * 0.85);
+        vig.addColorStop(0, 'rgba(0,0,0,0)');
+        vig.addColorStop(1, 'rgba(0,0,0,0.55)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, W, H);
+
+        // Dot grid
+        ctx.fillStyle = 'rgba(255,255,255,0.03)';
+        for (let r = 0; r < H; r += 44)
+            for (let c = 0; c < W; c += 44) {
+                ctx.beginPath(); ctx.arc(c, r, 1.5, 0, Math.PI * 2); ctx.fill();
+            }
+
+        ctx.textAlign = 'center';
+
+        // Brand
+        ctx.font = '700 28px "Nunito", system-ui, sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.42)';
+        ctx.fillText('HYPOTHETICALLY SPEAKING', W / 2, 88);
+
+        // Category
+        const catLabels = {
+            general:'🌍 General', spicy:'🌶️ Spicy', chaos:'😵 Chaos',
+            controversial:'💣 Controversial', ethical:'⚖️ Ethical',
+            deep:'🌊 Deep & Meaningful', random:'🎲 Random Mix',
+        };
+        ctx.font = '800 58px "Nunito", system-ui, sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(catLabels[state.category] || '🌍 General', W / 2, 168);
+
+        // Divider
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(120, 204); ctx.lineTo(960, 204); ctx.stroke();
+
+        // Opening quote mark
+        ctx.font = '220px Georgia, serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.textAlign = 'left';
+        ctx.fillText('“', 48, 490);
+        ctx.textAlign = 'center';
+
+        // Quote body
+        ctx.font = '600 52px "Nunito", system-ui, sans-serif';
+        ctx.fillStyle = '#ffffff';
+        const endY = _wrapText(ctx, quoteText, W / 2, 390, 820, 74);
+
+        // Closing quote mark
+        ctx.font = '220px Georgia, serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.textAlign = 'right';
+        ctx.fillText('”', W - 48, Math.min(endY + 150, 870));
+        ctx.textAlign = 'center';
+
+        // Attribution
+        if (quoteName) {
+            ctx.font = '600 italic 36px "Nunito", system-ui, sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.fillText('— ' + quoteName, W / 2, Math.min(endY + 96, 910));
+        }
+
+        // Bottom divider
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(120, 944); ctx.lineTo(960, 944); ctx.stroke();
+
+        // Player names
+        if (state.players.length > 0) {
+            ctx.font = '600 26px "Nunito", system-ui, sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.48)';
+            ctx.fillText(state.players.join('  ·  '), W / 2, 990);
+        }
+
+        // Tagline
+        ctx.font = 'italic 22px "Nunito", system-ui, sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.26)';
+        ctx.fillText('Where honesty gets uncomfortable', W / 2, 1048);
+
+        canvas.toBlob(blob => {
+            window._shareFile   = new File([blob], 'hypothetically-speaking.png', { type: 'image/png' });
+            window._shareCanvas = canvas;
+            _showShareOverlay(canvas);
+        }, 'image/png');
+    });
+}
+
+function _showShareOverlay(canvas) {
+    document.getElementById('sharePreviewImg').src = canvas.toDataURL('image/png');
+    document.getElementById('shareOverlay').classList.add('show');
+}
+
+function closeShareOverlay() {
+    document.getElementById('shareOverlay').classList.remove('show');
+    showEndActions();
+}
+
+function addAnotherCard() {
+    document.getElementById('shareOverlay').classList.remove('show');
+    document.getElementById('quoteText').value = '';
+    document.getElementById('quoteName').value = '';
+    document.getElementById('quoteSection').style.display = 'flex';
+    document.getElementById('endActions').style.display = 'none';
+    document.getElementById('quoteText').focus();
+}
+
+function doShare() {
+    const file = window._shareFile;
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({
+            title: 'Hypothetically...',
+            text: 'We survived a round of Hypothetically... 👀',
+            files: [file],
+        }).catch(() => {});
+    } else {
+        doDownload();
+    }
+}
+
+function doDownload() {
+    const a = document.createElement('a');
+    a.href = window._shareCanvas.toDataURL('image/png');
+    a.download = 'hypothetically-speaking.png';
+    a.click();
+}
+
+// ═══════════════════════════════════════════════════
 //  INTRO (first load only)
 // ═══════════════════════════════════════════════════
-document.getElementById('homeScreen').classList.add('intro');
+(function() {
+    const hs = document.getElementById('homeScreen');
+    hs.classList.add('intro');
+    setTimeout(() => hs.classList.remove('intro'), 2000);
+}());
+
 </script>
 </body>
 </html>
